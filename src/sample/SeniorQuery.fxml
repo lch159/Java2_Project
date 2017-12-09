@@ -119,7 +119,7 @@
                                             <content>
                                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                     <children>
-                                                        <TableView prefHeight="314.0" prefWidth="998.0">
+                                                        <TableView fx:id="tableView_table" prefHeight="314.0" prefWidth="998.0">
                                                             <columns>
                                                                 <TableColumn fx:id="tableColumn_magnitude" prefWidth="75.0" text="震级" />
                                                                 <TableColumn fx:id="tableColumn_Date" prefWidth="175.0" text="发震时刻" />

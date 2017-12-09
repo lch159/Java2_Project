@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.io.FileNotFoundException;
 
 public class Main extends Application {
 
@@ -21,6 +22,7 @@ public class Main extends Application {
         primaryStage.setY((screenSize.getHeight() - primaryStage.getHeight()) / 2);
         primaryStage.show();
     }
+
 
 
 

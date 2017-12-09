@@ -1,12 +1,12 @@
 package sample;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+
+import java.util.ArrayList;
 
 public class Controller_SeniorQuery {
-
     @FXML
     Button button_query;
     @FXML
@@ -29,6 +29,11 @@ public class Controller_SeniorQuery {
     TextField textField_magnitude_start;
     @FXML
     TextField textField_magnitude_end;
+    @FXML
+    TableView tableView_table;
+    @FXML
+    TableColumn tableColumn_magnitude;
+
 
     private static String start_year;
     private static String start_month;
@@ -44,6 +49,9 @@ public class Controller_SeniorQuery {
     private static String end_depth;
     private static String start_magnitude;
     private static String end_magnitude;
+    private Earthquake earthquake = new Earthquake("earthquakes.csv");
+
+
 
 
     private String getStart_Date() {
@@ -101,6 +109,16 @@ public class Controller_SeniorQuery {
         end_day = endDate[2];
     }
 
+    private void setTableColumn() {
+//        ArrayList<String[]> table =earthquake.getTable(start_year,end_year,start_month,end_month,start_day,end_day,start_latitude,end_latitude,start_longitude,end_longitude,start_depth,end_depth,start_magnitude,end_magnitude);
+        ArrayList<String> test =new ArrayList<>();
+        test.add("t1");
+        test.add("t2");
+        test.add("t3");
+//        tableColumn_magnitude.getColumns().set(2);
+    }
+
+
     public void onButtonQuery() {
         setStartDate(!getStart_Date().equals("") ? getStart_Date() : "2017-01-01");
         setEndDate(!getEnd_Date().equals("") ? getEnd_Date() : "2017-12-12");
@@ -113,6 +131,7 @@ public class Controller_SeniorQuery {
         start_magnitude = !getStart_magnitude().equals("") ? getStart_magnitude() : "0";
         end_magnitude = !getEnd_magnitude().equals("") ? getEnd_magnitude() : "10";
 
+//        setTableColumn();
 
     }
 
