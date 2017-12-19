@@ -1,48 +1,129 @@
 package sample;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * Created by 11611423 李晨昊 on 2017/12/7.16:19
  */
 public class Earthquake {
-    private CsvReader earthquakeFile;
-    private ArrayList<String[]> table;
 
-    Earthquake(String path) {
-        try {
-            table = new ArrayList<>();
-            earthquakeFile = new CsvReader(path);
-            earthquakeFile.readHeaders();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+    private StringProperty id;
+    private StringProperty magnitude;
+    private StringProperty UTC_date;
+    private StringProperty latitude;
+    private StringProperty longitude;
+    private StringProperty depth;
+    private StringProperty region;
+    private StringProperty area_id;
+
+    public Earthquake(StringEarthquake earthquake) {
+        this.id = new SimpleStringProperty(earthquake.getID());
+        this.magnitude = new SimpleStringProperty(earthquake.getMagnitude());
+        this.UTC_date = new SimpleStringProperty(earthquake.getUTC_date());
+        this.latitude = new SimpleStringProperty(earthquake.getLatitude());
+        this.longitude = new SimpleStringProperty(earthquake.getLongitude());
+        this.depth = new SimpleStringProperty(earthquake.getDepth());
+        this.region = new SimpleStringProperty(earthquake.getRegion());
+
+        this.area_id =new SimpleStringProperty(earthquake.getArea_id());
     }
 
-    public ArrayList<String[]> getTable(String start_year, String end_year, String start_month, String end_month, String start_day, String end_day, String start_latitude, String end_latitude, String start_longitude, String end_longitude
-            , String start_depth, String end_depth, String start_magnitude, String end_magnitude) {
 
-        try {
-            while (earthquakeFile.readRecord()) {
-
-                String[] tempDate = earthquakeFile.get("UTC_date").split("[ -]");
-                if (isFitValue(tempDate[0], start_year, end_year) && isFitValue(tempDate[1], start_month, end_month) && isFitValue(tempDate[2], start_day, end_day)&&isFitValue(earthquakeFile.get("latitude"),start_latitude,end_latitude)
-                        &&isFitValue(earthquakeFile.get("longitude"),start_longitude,end_longitude)&&isFitValue(earthquakeFile.get("depth"),start_depth,end_depth)&&isFitValue(earthquakeFile.get("magnitude"),start_magnitude,end_magnitude)){
-                    table.add(earthquakeFile.getValues());
-                }
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return table;
+    public void setID(String id) {
+        this.id.set(id);
     }
 
-    private boolean isFitValue(String value, String start, String end) {
-        return Integer.parseInt(value) >= Integer.parseInt(start) && Integer.parseInt(value) <= Integer.parseInt(end);
+    public String getID() {
+        return id.get();
+    }
 
+    public StringProperty idProperty() {
+        return id;
+    }
+
+    public void setMagnitude(String magnitude) {
+        this.magnitude.set(magnitude);
+    }
+
+    public String getMagnitude() {
+        return magnitude.get();
+    }
+
+    public StringProperty magnitudeProperty() {
+        return magnitude;
+    }
+
+    public void setUTC_date(String UTC_date) {
+        this.UTC_date.set(UTC_date);
+    }
+
+    public String getUTC_date() {
+        return UTC_date.get();
+    }
+
+    public StringProperty UTC_dateProperty() {
+        return UTC_date;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude.set(latitude);
+    }
+
+    public String getLatitude() {
+        return latitude.get();
+    }
+
+    public StringProperty latitudeProperty() {
+        return latitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude.set(longitude);
+    }
+
+    public String getLongitude() {
+        return longitude.get();
+    }
+
+    public StringProperty longitudeProperty() {
+        return longitude;
+    }
+
+    public void setDepth(String depth) {
+        this.depth.set(depth);
+    }
+
+    public String getDepth() {
+        return depth.get();
+    }
+
+    public StringProperty depthProperty() {
+        return depth;
+    }
+
+    public void setRegion(String region) {
+        this.region.set(region);
+    }
+
+    public String getRegion() {
+        return region.get();
+    }
+
+    public StringProperty regionProperty() {
+        return region;
+    }
+
+    public String getArea_id() {
+        return area_id.get();
+    }
+
+    public StringProperty area_idProperty() {
+        return area_id;
+    }
+
+    public void setArea_id(String area_id) {
+        this.area_id.set(area_id);
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.image.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
@@ -102,7 +103,8 @@
                                 </HBox>
                                 <Pane prefHeight="42.0" prefWidth="998.0">
                                     <children>
-                                        <Button fx:id="button_query" layoutX="472.0" layoutY="5.0" mnemonicParsing="false" onMouseClicked="#onButtonQuery" text="查    询" />
+                                        <Button fx:id="button_query" layoutX="425.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonQuery" text="查    询" />
+                                        <Button fx:id="button_query1" layoutX="499.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonClear" text="清    空" />
                                     </children>
                                 </Pane>
                             </children>
@@ -119,24 +121,29 @@
                                             <content>
                                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                                     <children>
-                                                        <TableView fx:id="tableView_table" prefHeight="314.0" prefWidth="998.0">
+                                                        <TableView fx:id="tableView_table" prefHeight="418.0" prefWidth="998.0">
                                                             <columns>
+                                                                <TableColumn fx:id="tableColumn_ID" prefWidth="75.0" text="ID" />
                                                                 <TableColumn fx:id="tableColumn_magnitude" prefWidth="75.0" text="震级" />
                                                                 <TableColumn fx:id="tableColumn_Date" prefWidth="175.0" text="发震时刻" />
                                                                 <TableColumn fx:id="tableColumn_latitude" minWidth="0.0" prefWidth="85.0" text="纬度" />
                                                                 <TableColumn fx:id="tableColumn_longitude" minWidth="0.0" prefWidth="86.0" text="经度" />
                                                                 <TableColumn fx:id="tableColumn_depth" prefWidth="93.0" text="深度" />
-                                                                <TableColumn fx:id="tableColumn_region" prefWidth="485.0" text="参考位置" />
+                                                                <TableColumn fx:id="tableColumn_region" prefWidth="324.0" text="参考位置" />
+                                                <TableColumn fx:id="tableColumn_area_id" prefWidth="84.0" text="位置ID" />
                                                             </columns>
                                                         </TableView>
-                                                        <Pane layoutY="316.0" prefHeight="126.0" prefWidth="998.0" />
                                                     </children>
                                                 </AnchorPane>
                                             </content>
                                         </Tab>
                                         <Tab fx:id="tabPane_map" text="显示到地图">
                                             <content>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                    <children>
+                                                        <Pane fx:id="pane_map" prefHeight="457.0" prefWidth="998.0" />
+                                                    </children>
+                                                </AnchorPane>
                                             </content>
                                         </Tab>
                                     </tabs>
