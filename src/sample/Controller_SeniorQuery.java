@@ -5,6 +5,10 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,6 +19,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 public class Controller_SeniorQuery implements Initializable {
 
@@ -57,7 +62,7 @@ public class Controller_SeniorQuery implements Initializable {
     @FXML
     TableColumn<Earthquake, String> tableColumn_region;
     @FXML
-    TableColumn<Earthquake,String > tableColumn_area_id;
+    TableColumn<Earthquake, String> tableColumn_area_id;
 
 
     private static Double start_year;
@@ -74,10 +79,11 @@ public class Controller_SeniorQuery implements Initializable {
     private static Double end_depth;
     private static Double start_magnitude;
     private static Double end_magnitude;
-    private ObservableList<Earthquake> data = FXCollections.observableArrayList();
-    private static ArrayList<String[]> table;
+    private ObservableList<Earthquake> data = FXCollections.observableArrayList();//用于绑定到tableview的数据
+    private static ArrayList<String[]> table;//存储查询到的表格数据
 
 
+    //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
         return textField.getText().isEmpty();
     }
@@ -143,6 +149,7 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
 
+    //将查询到的数据存入已经绑定的data中
     private void showList() {
         if (!data.isEmpty())
             data.clear();
@@ -157,7 +164,7 @@ public class Controller_SeniorQuery implements Initializable {
                 stringEarthquake.setDepth(elem[4]);
                 stringEarthquake.setMagnitude(elem[5]);
                 stringEarthquake.setRegion(elem[6]);
-                if (elem.length>6)
+                if (elem.length > 7)
                     stringEarthquake.setArea_id(elem[7]);
                 Earthquake earthquake = new Earthquake(stringEarthquake);
                 data.add(earthquake);
@@ -167,11 +174,14 @@ public class Controller_SeniorQuery implements Initializable {
         tableView_table.setItems(data);
     }
 
+
+    //判断该次地震的一个数据是否在范围内
     private boolean isFitValue(Double value, Double start, Double end) {
 
         return value >= start && value <= end;
     }
 
+    //判断地震所有数据是否符合要求
     private boolean isFitValues(String[] elem) {
         String[] tempDate = elem[1].split("[ -]");
         return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
@@ -179,6 +189,8 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
+
+    //获取文本框内填入的内容
     private void iniData() {
         setStartDate(getStart_Date());
         setEndDate(getEnd_Date());
@@ -192,6 +204,8 @@ public class Controller_SeniorQuery implements Initializable {
         end_magnitude = getEnd_magnitude();
     }
 
+
+    //从csv文件中获取原始数据
     private void readDataFromCsv(String path) {
         try {
             table = new ArrayList<>();
@@ -205,21 +219,22 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    private static String Drivde = "org.sqlite.JDBC";
 
+    //从数据库中获取原始数据
     private void readDataFromDatabase(String databaseName) {
         try {
-            table=new ArrayList<>();
-            Class.forName(Drivde);// 加载驱动,连接sqlite的jdbc
-            Connection connection=DriverManager.getConnection("jdbc:sqlite:"+databaseName);
+            table = new ArrayList<>();
+            String drivde = "org.sqlite.JDBC";
+            Class.forName(drivde);// 加载驱动,连接sqlite的jdbc
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
 
 
             Statement statement = connection.createStatement();
             ResultSet rSet = statement.executeQuery("select * from quakes");//搜索数据库，将搜索的放入数据集ResultSet中
             while (rSet.next()) {            //遍历这个数据集
                 String[] rowData = new String[8];
-                for (int i = 1; i <=8 ; i++) {
-                    rowData[i-1]=rSet.getString(i);
+                for (int i = 1; i <= 8; i++) {
+                    rowData[i - 1] = rSet.getString(i);
                 }
 
                 table.add(rowData);
@@ -233,10 +248,58 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
+
+    //从www.emsc-csem.org/Earthquake/网页抓取数据
+    private void readDataFromWebsite(int pages) {
+
+
+        table = new ArrayList<>();
+        Document document = null;
+        for (int i = 1; i < pages; i++) {
+            try {
+                String url = String.valueOf(new StringBuilder("https://www.emsc-csem.org/Earthquake/?view=").append(i));
+                document = Jsoup.connect(url).get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            assert document != null;
+            Elements element1 = document.getElementById("tbody").getElementsByTag("tr");
+            Pattern pattern = Pattern.compile("[0-9]*");
+            for (Element elem : element1) {
+                if (pattern.matcher(elem.id()).matches()) {
+                    String[] rowData = new String[7];
+                    rowData[0] = elem.id();
+                    rowData[1] = elem.getElementsByClass("tabev6").get(0).getElementsByTag("a").get(0).text();
+                    if (elem.getElementsByClass("tabev2").get(0).text().equals("N"))
+                        rowData[2] = elem.getElementsByClass("tabev1").get(0).text();
+                    else {
+                        rowData[2] = String.valueOf(new StringBuilder("-").append(elem.getElementsByClass("tabev1").get(0).text()));
+                    }
+                    if (elem.getElementsByClass("tabev2").get(1).text().equals("E"))
+                        rowData[3] = elem.getElementsByClass("tabev1").get(1).text();
+                    else {
+                        rowData[3] = String.valueOf(new StringBuilder("-").append(elem.getElementsByClass("tabev1").get(1).text()));
+                    }
+                    rowData[4] = elem.getElementsByClass("tabev3").get(0).text();
+                    rowData[5] = elem.getElementsByClass("tabev2").get(2).text();
+                    rowData[6] = elem.getElementsByClass("tb_region").get(0).text();
+
+                    table.add(rowData);
+                }
+            }
+        }
+
+
+
+
+    }
+
+    //初始化
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 //        readDataFromCsv("earthquakes.csv");
-        readDataFromDatabase("earthquakes-1.sqlite");
+//        readDataFromDatabase("earthquakes-1.sqlite");
+        readDataFromWebsite(3);
 
         tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
         tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());
@@ -248,6 +311,8 @@ public class Controller_SeniorQuery implements Initializable {
         tableColumn_area_id.setCellValueFactory(cellDate -> cellDate.getValue().area_idProperty());
     }
 
+
+    //错误信息框弹出配置
     private void errorInfoDialog(String info) {
         Alert warning = new Alert(Alert.AlertType.WARNING, info);
         Button warn = new Button();
@@ -256,6 +321,8 @@ public class Controller_SeniorQuery implements Initializable {
         warning.show();
     }
 
+
+    //文本框填入内容错误情况
     private boolean isErrorCondition() {
 
         boolean flag = true;
@@ -274,12 +341,15 @@ public class Controller_SeniorQuery implements Initializable {
         return flag;
     }
 
+    //查询按钮响应事件
     public void onButtonQuery() {
         iniData();
         if (!isErrorCondition())
             showList();
     }
 
+
+    //清空按钮响应事件
     public void onButtonClear() {
         data.clear();
         tableView_table.setItems(data);
