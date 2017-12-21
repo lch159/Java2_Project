@@ -103,7 +103,8 @@ public class Controller_SeniorQuery implements Initializable {
     private static List<String> filePostFix;//选择文件后缀
     private static String filePath;//文件所在路径
     private static Circle mark;
-    private static Image map =new Image("./sample/Mercator");
+//    private static Image map =new Image("./sample/Mercator");
+//    private ImageView map=imageView_map;
 
     //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
@@ -330,6 +331,9 @@ public class Controller_SeniorQuery implements Initializable {
 
     //将data中数据显示到map
     private void showMap() {
+        ImageView mapView =imageView_map;
+        pane_image.getChildren().clear();
+        pane_image.getChildren().add(mapView);
         double x = imageView_map.getFitWidth();
         double y = imageView_map.getFitHeight();
         imageView_map.getImage().getWidth();
@@ -363,8 +367,6 @@ public class Controller_SeniorQuery implements Initializable {
             pane_image.getChildren().add(mark);
             i--;
         }
-
-
     }
 
     //窗口初始配置
@@ -481,6 +483,9 @@ public class Controller_SeniorQuery implements Initializable {
         textField_depth_end.clear();
         textField_magnitude_start.clear();
         textField_magnitude_end.clear();
+        ImageView mapView =imageView_map;
+        pane_image.getChildren().clear();
+        pane_image.getChildren().add(mapView);
     }
 
     //浏览按钮响应事件
