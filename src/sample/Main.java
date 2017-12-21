@@ -17,9 +17,13 @@ public class Main extends Application {
         primaryStage.setTitle("Earthquake Query");
         primaryStage.setScene(new Scene(root, root.getLayoutX(), root.getLayoutY()));
         primaryStage.setResizable(false);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        primaryStage.setX((screenSize.getWidth() - primaryStage.getWidth()) / 2);
-        primaryStage.setY((screenSize.getHeight() - primaryStage.getHeight()) / 2);
+
+
+        primaryStage.setWidth(1200);
+        primaryStage.setHeight(800);
+//        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//        primaryStage.setX((screenSize.getWidth() - primaryStage.getWidth()) / 2);
+//        primaryStage.setY((screenSize.getHeight() - primaryStage.getHeight()) / 2);
         primaryStage.show();
     }
 

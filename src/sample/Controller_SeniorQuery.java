@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -14,12 +15,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
@@ -98,9 +100,10 @@ public class Controller_SeniorQuery implements Initializable {
     private ObservableList<Earthquake> data = FXCollections.observableArrayList();//与tableview绑定的数据
     private static ArrayList<String[]> table = new ArrayList<>();//存储查询到的数据
     private static String fileType;//选择文件类型
-    private static String filePostFix;//选择文件后缀
+    private static List<String> filePostFix;//选择文件后缀
     private static String filePath;//文件所在路径
     private static Circle mark;
+    private static Image map =new Image("./sample/Mercator");
 
     //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
@@ -225,8 +228,8 @@ public class Controller_SeniorQuery implements Initializable {
                 table.clear();
 
             if (databaseName!=null&&tableName!=null){
-                String drivde = "org.sqlite.JDBC";
-                Class.forName(drivde);// 加载驱动,连接sqlite的jdbc
+                String drive = "org.sqlite.JDBC";
+                Class.forName(drive);// 加载驱动,连接sqlite的jdbc
                 Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
                 Statement statement = connection.createStatement();
                 ResultSet rSet = statement.executeQuery("select * from " + tableName);//搜索数据库，将搜索的放入数据集ResultSet中
@@ -353,6 +356,7 @@ public class Controller_SeniorQuery implements Initializable {
             i++;
         }
 
+
         while (i >= 0) {
             mark = new Circle(tempData[i][0], tempData[i][1], 2);
             mark.setFill(Color.RED);
@@ -384,16 +388,12 @@ public class Controller_SeniorQuery implements Initializable {
         radioButton_fromCSV.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 textField_browse.clear();
-                fileType = "CSV";
-                filePostFix = "*.csv";
             }
         });
 
         radioButton_fromDB.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 textField_browse.clear();
-                fileType = "Database";
-                filePostFix = "*.db";
             }
         });
 
@@ -463,9 +463,6 @@ public class Controller_SeniorQuery implements Initializable {
                 readDataFromDatabase("earthquakes-2.db","quakes");
             }
             showTable();
-            System.out.print(pane_image.getChildren().size()+" ");
-            pane_image.getChildren().remove(mark);
-            System.out.println(pane_image.getChildren().size());
             showMap();
         }
     }
@@ -484,14 +481,24 @@ public class Controller_SeniorQuery implements Initializable {
         textField_depth_end.clear();
         textField_magnitude_start.clear();
         textField_magnitude_end.clear();
-        pane_image.getChildren().remove(mark);
     }
 
     //浏览按钮响应事件
     public void onButtonBrowse() {
+        if (radioButton_fromCSV.isSelected())
+        {
+            filePostFix=new LinkedList<>();
+            fileType = "CSV";
+            filePostFix.add("*.csv");
+        }else if (radioButton_fromDB.isSelected()){
+            filePostFix=new LinkedList<>();
+            fileType = "Database";
+            filePostFix.add("*.db");
+            filePostFix.add("*.sqlite");
+        }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("请选择文件来源");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType, filePostFix));
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType,filePostFix));
         File file = fileChooser.showOpenDialog(null);
         if (file != null)
         {
