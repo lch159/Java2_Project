@@ -5,19 +5,21 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
@@ -63,6 +65,20 @@ public class Controller_SeniorQuery implements Initializable {
     TableColumn<Earthquake, String> tableColumn_region;
     @FXML
     TableColumn<Earthquake, String> tableColumn_area_id;
+    @FXML
+    RadioButton radioButton_fromCSV;
+    @FXML
+    RadioButton radioButton_fromDB;
+    @FXML
+    RadioButton radioButton_fromWeb;
+    @FXML
+    TextField textField_browse;
+    @FXML
+    Button button_browse;
+    @FXML
+    ImageView imageView_map;
+    @FXML
+    Pane pane_image;
 
 
     private static Double start_year;
@@ -79,9 +95,12 @@ public class Controller_SeniorQuery implements Initializable {
     private static Double end_depth;
     private static Double start_magnitude;
     private static Double end_magnitude;
-    private ObservableList<Earthquake> data = FXCollections.observableArrayList();//用于绑定到tableview的数据
-    private static ArrayList<String[]> table;//存储查询到的表格数据
-
+    private ObservableList<Earthquake> data = FXCollections.observableArrayList();//与tableview绑定的数据
+    private static ArrayList<String[]> table = new ArrayList<>();//存储查询到的数据
+    private static String fileType;//选择文件类型
+    private static String filePostFix;//选择文件后缀
+    private static String filePath;//文件所在路径
+    private static Circle mark;
 
     //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
@@ -92,6 +111,7 @@ public class Controller_SeniorQuery implements Initializable {
         return datePicker.getEditor().getText().isEmpty();
     }
 
+    //获取文本内容
     private String getStart_Date() {
         return isContentEmpty(datePicker_start) ? "2017-01-01" : datePicker_start.getEditor().getText().trim();
     }
@@ -149,8 +169,139 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
 
-    //将查询到的数据存入已经绑定的data中
-    private void showList() {
+    //判断该次地震的一个数据是否在范围内
+    private boolean isFitValue(Double value, Double start, Double end) {
+        return value >= start && value <= end;
+    }
+
+    //判断该次地震所有数据是否符合要求
+    private boolean isFitValues(String[] elem) {
+        String[] tempDate = elem[1].split("[ -]");
+        return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
+                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude);
+
+    }
+
+    //获取文本框内填入的内容
+    private void getData() {
+        setStartDate(getStart_Date());
+        setEndDate(getEnd_Date());
+        start_latitude = getStart_latitude();
+        end_latitude = getEnd_latitude();
+        start_longitude = getStart_longitude();
+        end_longitude = getEnd_longitude();
+        start_depth = getStart_depth();
+        end_depth = getEnd_depth();
+        start_magnitude = getStart_magnitude();
+        end_magnitude = getEnd_magnitude();
+    }
+
+    //从csv文件中获取原始数据
+    private void readDataFromCsv(String path) {
+        try {
+            if (table!=null)
+                table.clear();
+
+            if (path!=null)
+            {
+                CsvReader earthquakeFile = new CsvReader(path);
+                earthquakeFile.readHeaders();
+                while (earthquakeFile.readRecord()) {
+                    table.add(earthquakeFile.getValues());
+                }
+            }else {
+                errorInfoDialog("请选择csv类型数据文件");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //从数据库中获取原始数据
+    private void readDataFromDatabase(String databaseName, String tableName) {
+        try {
+            if (table!=null)
+                table.clear();
+
+            if (databaseName!=null&&tableName!=null){
+                String drivde = "org.sqlite.JDBC";
+                Class.forName(drivde);// 加载驱动,连接sqlite的jdbc
+                Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
+                Statement statement = connection.createStatement();
+                ResultSet rSet = statement.executeQuery("select * from " + tableName);//搜索数据库，将搜索的放入数据集ResultSet中
+                while (rSet.next()) {            //遍历这个结果集
+                    String[] rowData = new String[8];
+                    for (int i = 1; i <= 8; i++) {
+                        rowData[i - 1] = rSet.getString(i);
+                    }
+
+                    table.add(rowData);
+                }
+                rSet.close();//关闭数据集
+                connection.close();//关闭数据库连接
+            }else {
+                errorInfoDialog("请选择db类型数据文件");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //从www.emsc-csem.org/Earthquake/网页抓取数据
+    private void scrapingDataFromWebsite(int pages) {
+        Document document;
+        try {
+            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+            Statement clearData = connection.createStatement();
+            clearData.execute(" delete from quakes");
+
+            for (int i = 1; i <= pages; i++) {
+                String url = String.valueOf(new StringBuilder("https://www.emsc-csem.org/Earthquake/?view=").append(i));
+                document = Jsoup.connect(url).get();
+                assert document != null;
+                Elements element1 = document.getElementById("tbody").getElementsByTag("tr");
+
+                Pattern pattern = Pattern.compile("[0-9]*");
+
+                for (Element elem : element1) {
+                    if (pattern.matcher(elem.id()).matches()) {
+                        String[] rowData = new String[7];
+                        rowData[0] = elem.id();
+                        rowData[1] = elem.getElementsByClass("tabev6").get(0).getElementsByTag("a").get(0).text();
+                        rowData[2] = elem.getElementsByClass("tabev2").get(0).text().equals("N") ? elem.getElementsByClass("tabev1").get(0).text() : String.valueOf(new StringBuilder("-").append(elem.getElementsByClass("tabev1").get(0).text()));
+                        rowData[3] = elem.getElementsByClass("tabev2").get(1).text().equals("E") ? elem.getElementsByClass("tabev1").get(1).text() : String.valueOf(new StringBuilder("-").append(elem.getElementsByClass("tabev1").get(1).text()));
+                        rowData[4] = elem.getElementsByClass("tabev3").get(0).text();
+                        rowData[5] = elem.getElementsByClass("tabev2").get(2).text();
+                        rowData[6] = elem.getElementsByClass("tb_region").get(0).text();
+
+                        //将爬取的数据存入数据库
+                        try {
+                            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO quakes(id,UTC_date,latitude,longitude,depth,magnitude,region) VALUES (?,?,?,?,?,?,?)");
+                            preparedStatement.setInt(1, Integer.parseInt(rowData[0]));
+                            preparedStatement.setString(2, rowData[1]);
+                            preparedStatement.setDouble(3, Double.parseDouble(rowData[2]));
+                            preparedStatement.setDouble(4, Double.parseDouble(rowData[3]));
+                            preparedStatement.setInt(5, Integer.parseInt(rowData[4]));
+                            preparedStatement.setDouble(6, Double.parseDouble(rowData[5]));
+                            preparedStatement.setString(7, rowData[6]);
+                            preparedStatement.executeUpdate();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            connection.close();//关闭数据库连接
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //将data中数据显示到表格
+    private void showTable() {
         if (!data.isEmpty())
             data.clear();
 
@@ -174,132 +325,48 @@ public class Controller_SeniorQuery implements Initializable {
         tableView_table.setItems(data);
     }
 
+    //将data中数据显示到map
+    private void showMap() {
+        double x = imageView_map.getFitWidth();
+        double y = imageView_map.getFitHeight();
+        imageView_map.getImage().getWidth();
+        int size = data.size();
 
-    //判断该次地震的一个数据是否在范围内
-    private boolean isFitValue(Double value, Double start, Double end) {
+        double[][] tempData = new double[size + 1][2];
+        int i = 0;
 
-        return value >= start && value <= end;
-    }
+        for (Earthquake temp : data) {
+            double longitude = Double.parseDouble(temp.getLongitude());
+            double latitude = Double.parseDouble(temp.getLatitude());
+            double xp;
+            double yp;
 
-    //判断地震所有数据是否符合要求
-    private boolean isFitValues(String[] elem) {
-        String[] tempDate = elem[1].split("[ -]");
-        return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
-                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude);
-
-    }
-
-
-    //获取文本框内填入的内容
-    private void iniData() {
-        setStartDate(getStart_Date());
-        setEndDate(getEnd_Date());
-        start_latitude = getStart_latitude();
-        end_latitude = getEnd_latitude();
-        start_longitude = getStart_longitude();
-        end_longitude = getEnd_longitude();
-        start_depth = getStart_depth();
-        end_depth = getEnd_depth();
-        start_magnitude = getStart_magnitude();
-        end_magnitude = getEnd_magnitude();
-    }
-
-
-    //从csv文件中获取原始数据
-    private void readDataFromCsv(String path) {
-        try {
-            table = new ArrayList<>();
-            CsvReader earthquakeFile = new CsvReader(path);
-            earthquakeFile.readHeaders();
-            while (earthquakeFile.readRecord()) {
-                table.add(earthquakeFile.getValues());
+            if (longitude >= 0) {
+                xp = longitude / 360 * x;
+            } else {
+                xp = (360 + longitude) / 360 * x;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            yp = (90 - latitude) / 180 * y;
+
+            tempData[i][0] = xp;
+            tempData[i][1] = yp;
+            i++;
         }
-    }
 
-
-    //从数据库中获取原始数据
-    private void readDataFromDatabase(String databaseName) {
-        try {
-            table = new ArrayList<>();
-            String drivde = "org.sqlite.JDBC";
-            Class.forName(drivde);// 加载驱动,连接sqlite的jdbc
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
-
-
-            Statement statement = connection.createStatement();
-            ResultSet rSet = statement.executeQuery("select * from quakes");//搜索数据库，将搜索的放入数据集ResultSet中
-            while (rSet.next()) {            //遍历这个数据集
-                String[] rowData = new String[8];
-                for (int i = 1; i <= 8; i++) {
-                    rowData[i - 1] = rSet.getString(i);
-                }
-
-                table.add(rowData);
-
-            }
-            rSet.close();//关闭数据集
-            connection.close();//关闭数据库连接
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
-
-    //从www.emsc-csem.org/Earthquake/网页抓取数据
-    private void readDataFromWebsite(int pages) {
-
-
-        table = new ArrayList<>();
-        Document document = null;
-        for (int i = 1; i < pages; i++) {
-            try {
-                String url = String.valueOf(new StringBuilder("https://www.emsc-csem.org/Earthquake/?view=").append(i));
-                document = Jsoup.connect(url).get();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            assert document != null;
-            Elements element1 = document.getElementById("tbody").getElementsByTag("tr");
-            Pattern pattern = Pattern.compile("[0-9]*");
-            for (Element elem : element1) {
-                if (pattern.matcher(elem.id()).matches()) {
-                    String[] rowData = new String[7];
-                    rowData[0] = elem.id();
-                    rowData[1] = elem.getElementsByClass("tabev6").get(0).getElementsByTag("a").get(0).text();
-                    if (elem.getElementsByClass("tabev2").get(0).text().equals("N"))
-                        rowData[2] = elem.getElementsByClass("tabev1").get(0).text();
-                    else {
-                        rowData[2] = String.valueOf(new StringBuilder("-").append(elem.getElementsByClass("tabev1").get(0).text()));
-                    }
-                    if (elem.getElementsByClass("tabev2").get(1).text().equals("E"))
-                        rowData[3] = elem.getElementsByClass("tabev1").get(1).text();
-                    else {
-                        rowData[3] = String.valueOf(new StringBuilder("-").append(elem.getElementsByClass("tabev1").get(1).text()));
-                    }
-                    rowData[4] = elem.getElementsByClass("tabev3").get(0).text();
-                    rowData[5] = elem.getElementsByClass("tabev2").get(2).text();
-                    rowData[6] = elem.getElementsByClass("tb_region").get(0).text();
-
-                    table.add(rowData);
-                }
-            }
+        while (i >= 0) {
+            mark = new Circle(tempData[i][0], tempData[i][1], 2);
+            mark.setFill(Color.RED);
+            pane_image.getChildren().add(mark);
+            i--;
         }
 
 
-
-
     }
 
-    //初始化
+    //窗口初始配置
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-//        readDataFromCsv("earthquakes.csv");
-//        readDataFromDatabase("earthquakes-1.sqlite");
-        readDataFromWebsite(3);
+        radioButtonConfig();
 
         tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
         tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());
@@ -311,6 +378,44 @@ public class Controller_SeniorQuery implements Initializable {
         tableColumn_area_id.setCellValueFactory(cellDate -> cellDate.getValue().area_idProperty());
     }
 
+    //单选按钮组配置
+    private void radioButtonConfig() {
+
+        radioButton_fromCSV.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                textField_browse.clear();
+                fileType = "CSV";
+                filePostFix = "*.csv";
+            }
+        });
+
+        radioButton_fromDB.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                textField_browse.clear();
+                fileType = "Database";
+                filePostFix = "*.db";
+            }
+        });
+
+        radioButton_fromWeb.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                button_browse.setDisable(true);
+                textField_browse.setText("https://www.emsc-csem.org/Earthquake");
+                textField_browse.setDisable(true);
+            } else {
+                button_browse.setDisable(false);
+                textField_browse.clear();
+                textField_browse.setDisable(false);
+            }
+        });
+
+        ToggleGroup toggleGroup = new ToggleGroup();
+        radioButton_fromCSV.setToggleGroup(toggleGroup);
+        radioButton_fromDB.setToggleGroup(toggleGroup);
+        radioButton_fromWeb.setToggleGroup(toggleGroup);
+        radioButton_fromCSV.setSelected(true);
+
+    }
 
     //错误信息框弹出配置
     private void errorInfoDialog(String info) {
@@ -321,10 +426,8 @@ public class Controller_SeniorQuery implements Initializable {
         warning.show();
     }
 
-
     //文本框填入内容错误情况
     private boolean isErrorCondition() {
-
         boolean flag = true;
         if (start_year > end_year || start_month > end_month || start_day > end_day)
             errorInfoDialog("日期填写错误或起始值大于终止值");
@@ -343,11 +446,29 @@ public class Controller_SeniorQuery implements Initializable {
 
     //查询按钮响应事件
     public void onButtonQuery() {
-        iniData();
+        getData();
         if (!isErrorCondition())
-            showList();
+        {
+            if (radioButton_fromCSV.isSelected())
+            {
+                readDataFromCsv(filePath);
+            }
+            else if (radioButton_fromDB.isSelected())
+            {
+                readDataFromDatabase(filePath,"quakes");
+            }
+            else if (radioButton_fromWeb.isSelected())
+            {
+                scrapingDataFromWebsite(1);
+                readDataFromDatabase("earthquakes-2.db","quakes");
+            }
+            showTable();
+            System.out.print(pane_image.getChildren().size()+" ");
+            pane_image.getChildren().remove(mark);
+            System.out.println(pane_image.getChildren().size());
+            showMap();
+        }
     }
-
 
     //清空按钮响应事件
     public void onButtonClear() {
@@ -363,6 +484,21 @@ public class Controller_SeniorQuery implements Initializable {
         textField_depth_end.clear();
         textField_magnitude_start.clear();
         textField_magnitude_end.clear();
+        pane_image.getChildren().remove(mark);
+    }
+
+    //浏览按钮响应事件
+    public void onButtonBrowse() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("请选择文件来源");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType, filePostFix));
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null)
+        {
+            textField_browse.setText(file.getAbsolutePath());
+            filePath=file.getAbsolutePath();
+        }
+
     }
 
 }
