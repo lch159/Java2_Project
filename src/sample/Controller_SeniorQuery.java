@@ -15,14 +15,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Controller_SeniorQuery implements Initializable {
@@ -115,7 +113,7 @@ public class Controller_SeniorQuery implements Initializable {
         return datePicker.getEditor().getText().isEmpty();
     }
 
-    //获取文本内容
+    //获取文本框内容
     private String getStart_Date() {
         return isContentEmpty(datePicker_start) ? "2017-01-01" : datePicker_start.getEditor().getText().trim();
     }
@@ -203,17 +201,16 @@ public class Controller_SeniorQuery implements Initializable {
     //从csv文件中获取原始数据
     private void readDataFromCsv(String path) {
         try {
-            if (table!=null)
+            if (table != null)
                 table.clear();
 
-            if (path!=null)
-            {
+            if (path != null) {
                 CsvReader earthquakeFile = new CsvReader(path);
                 earthquakeFile.readHeaders();
                 while (earthquakeFile.readRecord()) {
                     table.add(earthquakeFile.getValues());
                 }
-            }else {
+            } else {
                 errorInfoDialog("请选择csv类型数据文件");
             }
 
@@ -225,10 +222,10 @@ public class Controller_SeniorQuery implements Initializable {
     //从数据库中获取原始数据
     private void readDataFromDatabase(String databaseName, String tableName) {
         try {
-            if (table!=null)
+            if (table != null)
                 table.clear();
 
-            if (databaseName!=null&&tableName!=null){
+            if (databaseName != null && tableName != null) {
                 String drive = "org.sqlite.JDBC";
                 Class.forName(drive);// 加载驱动,连接sqlite的jdbc
                 Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
@@ -244,7 +241,7 @@ public class Controller_SeniorQuery implements Initializable {
                 }
                 rSet.close();//关闭数据集
                 connection.close();//关闭数据库连接
-            }else {
+            } else {
                 errorInfoDialog("请选择db类型数据文件");
             }
 
@@ -270,7 +267,8 @@ public class Controller_SeniorQuery implements Initializable {
 
                 Pattern pattern = Pattern.compile("[0-9]*");
 
-                for (Element elem : element1) {
+                for (int i1 = 0; i1 < element1.size() - 1; i1++) {
+                    Element elem = element1.get(i1);
                     if (pattern.matcher(elem.id()).matches()) {
                         String[] rowData = new String[7];
                         rowData[0] = elem.id();
@@ -291,7 +289,7 @@ public class Controller_SeniorQuery implements Initializable {
                             preparedStatement.setInt(5, Integer.parseInt(rowData[4]));
                             preparedStatement.setDouble(6, Double.parseDouble(rowData[5]));
                             preparedStatement.setString(7, rowData[6]);
-                            preparedStatement.executeUpdate();
+                            preparedStatement.execute();
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -319,8 +317,7 @@ public class Controller_SeniorQuery implements Initializable {
                 stringEarthquake.setDepth(elem[4]);
                 stringEarthquake.setMagnitude(elem[5]);
                 stringEarthquake.setRegion(elem[6]);
-                if (elem.length > 7)
-                    stringEarthquake.setArea_id(elem[7]);
+                stringEarthquake.setArea_id(elem[7]);
                 Earthquake earthquake = new Earthquake(stringEarthquake);
                 data.add(earthquake);
 
@@ -331,7 +328,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     //将data中数据显示到map
     private void showMap() {
-        ImageView mapView =imageView_map;
+        ImageView mapView = imageView_map;
         pane_image.getChildren().clear();
         pane_image.getChildren().add(mapView);
         double x = imageView_map.getFitWidth();
@@ -369,21 +366,6 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    //窗口初始配置
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        radioButtonConfig();
-
-        tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
-        tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());
-        tableColumn_Date.setCellValueFactory(cellDate -> cellDate.getValue().UTC_dateProperty());
-        tableColumn_latitude.setCellValueFactory(cellDate -> cellDate.getValue().latitudeProperty());
-        tableColumn_longitude.setCellValueFactory(cellDate -> cellDate.getValue().longitudeProperty());
-        tableColumn_depth.setCellValueFactory(cellDate -> cellDate.getValue().depthProperty());
-        tableColumn_region.setCellValueFactory(cellDate -> cellDate.getValue().regionProperty());
-        tableColumn_area_id.setCellValueFactory(cellDate -> cellDate.getValue().area_idProperty());
-    }
-
     //单选按钮组配置
     private void radioButtonConfig() {
 
@@ -419,6 +401,28 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
+    //文件选择器配置
+    private void chooseFileConfig() {
+        if (radioButton_fromCSV.isSelected()) {
+            filePostFix = new LinkedList<>();
+            fileType = "CSV";
+            filePostFix.add("*.csv");
+        } else if (radioButton_fromDB.isSelected()) {
+            filePostFix = new LinkedList<>();
+            fileType = "Database";
+            filePostFix.add("*.db");
+            filePostFix.add("*.sqlite");
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("请选择文件来源");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType, filePostFix));
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            textField_browse.setText(file.getAbsolutePath());
+            filePath = file.getAbsolutePath();
+        }
+    }
+
     //错误信息框弹出配置
     private void errorInfoDialog(String info) {
         Alert warning = new Alert(Alert.AlertType.WARNING, info);
@@ -449,20 +453,14 @@ public class Controller_SeniorQuery implements Initializable {
     //查询按钮响应事件
     public void onButtonQuery() {
         getData();
-        if (!isErrorCondition())
-        {
-            if (radioButton_fromCSV.isSelected())
-            {
+        if (!isErrorCondition()) {
+            if (radioButton_fromCSV.isSelected()) {
                 readDataFromCsv(filePath);
-            }
-            else if (radioButton_fromDB.isSelected())
-            {
-                readDataFromDatabase(filePath,"quakes");
-            }
-            else if (radioButton_fromWeb.isSelected())
-            {
-                scrapingDataFromWebsite(1);
-                readDataFromDatabase("earthquakes-2.db","quakes");
+            } else if (radioButton_fromDB.isSelected()) {
+                readDataFromDatabase(filePath, "quakes");
+            } else if (radioButton_fromWeb.isSelected()) {
+                scrapingDataFromWebsite(2);
+                readDataFromDatabase("earthquakes-2.db", "quakes");
             }
             showTable();
             showMap();
@@ -483,34 +481,28 @@ public class Controller_SeniorQuery implements Initializable {
         textField_depth_end.clear();
         textField_magnitude_start.clear();
         textField_magnitude_end.clear();
-        ImageView mapView =imageView_map;
+        ImageView mapView = imageView_map;
         pane_image.getChildren().clear();
         pane_image.getChildren().add(mapView);
     }
 
     //浏览按钮响应事件
     public void onButtonBrowse() {
-        if (radioButton_fromCSV.isSelected())
-        {
-            filePostFix=new LinkedList<>();
-            fileType = "CSV";
-            filePostFix.add("*.csv");
-        }else if (radioButton_fromDB.isSelected()){
-            filePostFix=new LinkedList<>();
-            fileType = "Database";
-            filePostFix.add("*.db");
-            filePostFix.add("*.sqlite");
-        }
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("请选择文件来源");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType,filePostFix));
-        File file = fileChooser.showOpenDialog(null);
-        if (file != null)
-        {
-            textField_browse.setText(file.getAbsolutePath());
-            filePath=file.getAbsolutePath();
-        }
-
+        chooseFileConfig();
     }
 
+    //窗口初始化
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        radioButtonConfig();
+
+        tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
+        tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());
+        tableColumn_Date.setCellValueFactory(cellDate -> cellDate.getValue().UTC_dateProperty());
+        tableColumn_latitude.setCellValueFactory(cellDate -> cellDate.getValue().latitudeProperty());
+        tableColumn_longitude.setCellValueFactory(cellDate -> cellDate.getValue().longitudeProperty());
+        tableColumn_depth.setCellValueFactory(cellDate -> cellDate.getValue().depthProperty());
+        tableColumn_region.setCellValueFactory(cellDate -> cellDate.getValue().regionProperty());
+        tableColumn_area_id.setCellValueFactory(cellDate -> cellDate.getValue().area_idProperty());
+    }
 }
