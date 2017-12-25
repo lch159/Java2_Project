@@ -79,6 +79,8 @@ public class Controller_SeniorQuery implements Initializable {
     ImageView imageView_map;
     @FXML
     Pane pane_image;
+    @FXML
+    ComboBox comboBox_area;
 
 
     private static Double start_year;
@@ -204,17 +206,36 @@ public class Controller_SeniorQuery implements Initializable {
             if (table != null)
                 table.clear();
 
+            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+            Statement clearData = connection.createStatement();
+            clearData.execute(" delete from quakes");
             if (path != null) {
                 CsvReader earthquakeFile = new CsvReader(path);
                 earthquakeFile.readHeaders();
                 while (earthquakeFile.readRecord()) {
-                    table.add(earthquakeFile.getValues());
+//                    table.add(earthquakeFile.getValues());
+                    String[] values = earthquakeFile.getValues();
+                    try {
+                        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO quakes(id,UTC_date,latitude,longitude,depth,magnitude,region) VALUES (?,?,?,?,?,?,?)");
+                        preparedStatement.setInt(1, Integer.parseInt(values[0]));
+                        preparedStatement.setString(2, values[1]);
+                        preparedStatement.setDouble(3, Double.parseDouble(values[2]));
+                        preparedStatement.setDouble(4, Double.parseDouble(values[3]));
+                        preparedStatement.setInt(5, Integer.parseInt(values[4]));
+                        preparedStatement.setDouble(6, Double.parseDouble(values[5]));
+                        preparedStatement.setString(7, values[6]);
+                        preparedStatement.execute();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             } else {
                 errorInfoDialog("请选择csv类型数据文件");
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -224,6 +245,7 @@ public class Controller_SeniorQuery implements Initializable {
         try {
             if (table != null)
                 table.clear();
+
 
             if (databaseName != null && tableName != null) {
                 String drive = "org.sqlite.JDBC";
@@ -401,6 +423,12 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
+
+    //多选下拉框配置
+    private void comboBoxConfig(){
+
+
+    }
     //文件选择器配置
     private void chooseFileConfig() {
         if (radioButton_fromCSV.isSelected()) {
@@ -455,7 +483,10 @@ public class Controller_SeniorQuery implements Initializable {
         getData();
         if (!isErrorCondition()) {
             if (radioButton_fromCSV.isSelected()) {
-                readDataFromCsv(filePath);
+                {
+                    readDataFromCsv(filePath);
+                    readDataFromDatabase("earthquakes-2.db","quakes");
+                }
             } else if (radioButton_fromDB.isSelected()) {
                 readDataFromDatabase(filePath, "quakes");
             } else if (radioButton_fromWeb.isSelected()) {

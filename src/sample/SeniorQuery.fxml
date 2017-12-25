@@ -60,13 +60,13 @@
                                 <Separator prefWidth="200.0" />
                                 <HBox prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Pane prefHeight="50.0" prefWidth="400.0">
+                                        <Pane prefHeight="50.0" prefWidth="300.0">
                                             <children>
                                                 <Label layoutX="14.0" layoutY="13.0" text="时间：" />
                                                 <DatePicker fx:id="datePicker_start" layoutX="68.0" layoutY="7.0" promptText="Eg : XXXX-XX-XX" />
                                             </children>
                                         </Pane>
-                                        <Pane prefHeight="50.0" prefWidth="800.0" HBox.hgrow="ALWAYS">
+                                        <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
                                                 <Label layoutX="5.0" layoutY="13.0" text="至" />
                                                 <DatePicker fx:id="datePicker_end" layoutX="48.0" layoutY="7.0" promptText="Eg : XXXX-XX-XX" />
@@ -75,6 +75,18 @@
                                                 <Insets />
                                             </HBox.margin>
                                         </Pane>
+                              <Pane prefHeight="50.0" prefWidth="300.0">
+                                 <children>
+                                    <ComboBox fx:id="comboBox_area1" layoutX="87.0" layoutY="10.0" prefWidth="150.0" />
+                                    <Label layoutX="14.0" layoutY="15.0" text="板块1" />
+                                 </children>
+                              </Pane>
+                              <Pane prefHeight="50.0" prefWidth="300.0">
+                                 <children>
+                                    <Label layoutX="14.0" layoutY="15.0" text="板块2" />
+                                    <ComboBox fx:id="comboBox_area2" layoutX="96.0" layoutY="10.0" prefWidth="150.0" />
+                                 </children>
+                              </Pane>
                                     </children>
                                     <opaqueInsets>
                                         <Insets />
@@ -85,7 +97,7 @@
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
                                                 <Label layoutX="14.0" layoutY="13.0" text="纬度：大于" />
-                                                <TextField fx:id="textField_latitude_start" layoutX="116.0" layoutY="7.0" prefWidth="190.0" promptText="单位：度(-90~90)" />
+                                                <TextField fx:id="textField_latitude_start" layoutX="109.0" layoutY="10.0" prefWidth="190.0" promptText="单位：度(-90~90)" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
@@ -113,7 +125,7 @@
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
                                                 <Label layoutX="14.0" layoutY="14.0" text="深度：大于" />
-                                                <TextField fx:id="textField_depth_start" layoutX="116.0" layoutY="8.0" prefWidth="190.0" promptText="单位：千米" />
+                                                <TextField fx:id="textField_depth_start" layoutX="109.0" layoutY="9.0" prefWidth="190.0" promptText="单位：千米" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
@@ -138,8 +150,8 @@
                                 </HBox>
                                 <Pane prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Button fx:id="button_query" layoutX="527.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonQuery" text="查    询" />
-                                        <Button fx:id="button_query1" layoutX="668.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonClear" text="清    空" />
+                                        <Button fx:id="button_query" layoutX="470.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonQuery" text="查    询" />
+                                        <Button fx:id="button_query1" layoutX="650.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonClear" text="清    空" />
                                     </children>
                                 </Pane>
                             </children>
