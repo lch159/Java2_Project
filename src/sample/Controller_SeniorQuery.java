@@ -80,7 +80,9 @@ public class Controller_SeniorQuery implements Initializable {
     @FXML
     Pane pane_image;
     @FXML
-    ComboBox comboBox_area;
+    ComboBox comboBox_area1;
+    @FXML
+    ComboBox comboBox_area2;
 
 
     private static Double start_year;
@@ -103,8 +105,6 @@ public class Controller_SeniorQuery implements Initializable {
     private static List<String> filePostFix;//选择文件后缀
     private static String filePath;//文件所在路径
     private static Circle mark;
-//    private static Image map =new Image("./sample/Mercator");
-//    private ImageView map=imageView_map;
 
     //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
@@ -113,6 +113,10 @@ public class Controller_SeniorQuery implements Initializable {
 
     private boolean isContentEmpty(DatePicker datePicker) {
         return datePicker.getEditor().getText().isEmpty();
+    }
+
+    private boolean isContentEmpty(ComboBox comboBox) {
+        return comboBox.getEditor().getText().isEmpty();
     }
 
     //获取文本框内容
@@ -158,6 +162,14 @@ public class Controller_SeniorQuery implements Initializable {
         return isContentEmpty(textField_magnitude_end) ? 10 : Double.parseDouble(textField_magnitude_end.getText().trim());
     }
 
+    private String getPlate1() {
+        return isContentEmpty(comboBox_area1) ? "All" : comboBox_area1.getEditor().getText();
+    }
+
+    private String getPlate2() {
+        return isContentEmpty(comboBox_area1) ? "All" : comboBox_area2.getEditor().getText();
+    }
+
     private void setStartDate(String date) {
         String[] startDate = date.split("-");
         start_year = Double.parseDouble(startDate[0]);
@@ -183,7 +195,6 @@ public class Controller_SeniorQuery implements Initializable {
         String[] tempDate = elem[1].split("[ -]");
         return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
                 && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude);
-
     }
 
     //获取文本框内填入的内容
@@ -206,15 +217,17 @@ public class Controller_SeniorQuery implements Initializable {
             if (table != null)
                 table.clear();
 
-            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
-            Statement clearData = connection.createStatement();
-            clearData.execute(" delete from quakes");
+
             if (path != null) {
+                Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+                Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+                Statement clearData = connection.createStatement();
+                clearData.execute(" delete from quakes");
                 CsvReader earthquakeFile = new CsvReader(path);
                 earthquakeFile.readHeaders();
+                System.out.println("here1");
                 while (earthquakeFile.readRecord()) {
-//                    table.add(earthquakeFile.getValues());
+
                     String[] values = earthquakeFile.getValues();
                     try {
                         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO quakes(id,UTC_date,latitude,longitude,depth,magnitude,region) VALUES (?,?,?,?,?,?,?)");
@@ -229,8 +242,11 @@ public class Controller_SeniorQuery implements Initializable {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
+                    System.out.println("here2");
 
                 }
+                System.out.println("here3");
+                connection.close();
             } else {
                 errorInfoDialog("请选择csv类型数据文件");
             }
@@ -245,7 +261,6 @@ public class Controller_SeniorQuery implements Initializable {
         try {
             if (table != null)
                 table.clear();
-
 
             if (databaseName != null && tableName != null) {
                 String drive = "org.sqlite.JDBC";
@@ -342,7 +357,6 @@ public class Controller_SeniorQuery implements Initializable {
                 stringEarthquake.setArea_id(elem[7]);
                 Earthquake earthquake = new Earthquake(stringEarthquake);
                 data.add(earthquake);
-
             }
         }
         tableView_table.setItems(data);
@@ -378,7 +392,6 @@ public class Controller_SeniorQuery implements Initializable {
             tempData[i][1] = yp;
             i++;
         }
-
 
         while (i >= 0) {
             mark = new Circle(tempData[i][0], tempData[i][1], 2);
@@ -425,10 +438,33 @@ public class Controller_SeniorQuery implements Initializable {
 
 
     //多选下拉框配置
-    private void comboBoxConfig(){
+    private void comboBoxConfig() {
+        ObservableList<String> areas = FXCollections.observableArrayList();
+        ArrayList<String> plate1 = new ArrayList<>();
+        ArrayList<String> plate2 = new ArrayList<>();
+        try {
+            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(" SELECT NAME FROM plates ");
+            while (resultSet.next()) {
+                areas.add(resultSet.getString("name"));
+            }
+            ResultSet resultSet1 = statement.executeQuery("SELECT id and plate1 AND plate2 FROM plate_areas");
+            while (resultSet1.next()) {
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        comboBox_area1.getItems().addAll(areas);
+        comboBox_area2.getItems().addAll(areas);
 
 
     }
+
     //文件选择器配置
     private void chooseFileConfig() {
         if (radioButton_fromCSV.isSelected()) {
@@ -485,7 +521,7 @@ public class Controller_SeniorQuery implements Initializable {
             if (radioButton_fromCSV.isSelected()) {
                 {
                     readDataFromCsv(filePath);
-                    readDataFromDatabase("earthquakes-2.db","quakes");
+                    readDataFromDatabase("earthquakes-2.db", "quakes");
                 }
             } else if (radioButton_fromDB.isSelected()) {
                 readDataFromDatabase(filePath, "quakes");
@@ -526,6 +562,7 @@ public class Controller_SeniorQuery implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         radioButtonConfig();
+        comboBoxConfig();
 
         tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
         tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());
