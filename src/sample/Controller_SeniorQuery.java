@@ -1,5 +1,7 @@
 package sample;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -104,7 +106,8 @@ public class Controller_SeniorQuery implements Initializable {
     private static String fileType;//选择文件类型
     private static List<String> filePostFix;//选择文件后缀
     private static String filePath;//文件所在路径
-    private static Circle mark;
+    private static Circle mark;//地图点标记
+    private boolean isChangedFile =false;//是否改变了文件源
 
     //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
@@ -115,9 +118,10 @@ public class Controller_SeniorQuery implements Initializable {
         return datePicker.getEditor().getText().isEmpty();
     }
 
-    private boolean isContentEmpty(ComboBox comboBox) {
-        return comboBox.getEditor().getText().isEmpty();
-    }
+//    private boolean isContentEmpty(ComboBox comboBox) {
+//
+//        return comboBox.getEditor().getText();
+//    }
 
     //获取文本框内容
     private String getStart_Date() {
@@ -163,11 +167,11 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
     private String getPlate1() {
-        return isContentEmpty(comboBox_area1) ? "All" : comboBox_area1.getEditor().getText();
+        return String.valueOf(comboBox_area1.getValue());
     }
 
     private String getPlate2() {
-        return isContentEmpty(comboBox_area1) ? "All" : comboBox_area2.getEditor().getText();
+        return String.valueOf(comboBox_area2.getValue());
     }
 
     private void setStartDate(String date) {
@@ -190,11 +194,24 @@ public class Controller_SeniorQuery implements Initializable {
         return value >= start && value <= end;
     }
 
+    private boolean isSelectedArea(String area_id){
+        boolean flag =false;
+        String plate1=plates.get(area_id)[0];
+        String plate2=plates.get(area_id)[1];
+        String selectPlate1=areas.get(getPlate1());
+        String selectPlate2=areas.get(getPlate2());
+        System.out.print(selectPlate1+" "+plate1+" "+selectPlate2+" "+plate2+" ");
+        if( (selectPlate1.equals("All")&&selectPlate1.equals("All"))||(selectPlate2.equals("All")&&plate1.equals(selectPlate1))||(selectPlate1.equals("All")&&plate2.equals(selectPlate2))||(plate1.equals(selectPlate1)&&plate2.equals(selectPlate2)))
+            flag = true;
+        System.out.println((selectPlate1.equals("All")&&selectPlate1.equals("All"))+" "+(selectPlate2.equals("All")&&plate1.equals(selectPlate1))+" "+(selectPlate1.equals("All")&&plate2.equals(selectPlate2))+" "+(plate1.equals(selectPlate1)&&plate2.equals(selectPlate2)));
+        return flag;
+    }
+
     //判断该次地震所有数据是否符合要求
     private boolean isFitValues(String[] elem) {
         String[] tempDate = elem[1].split("[ -]");
         return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
-                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude);
+                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude)&&isSelectedArea(elem[7]);
     }
 
     //获取文本框内填入的内容
@@ -212,11 +229,11 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
     //从csv文件中获取原始数据
-    private void readDataFromCsv(String path) {
+    private boolean readDataFromCsv(String path) {
+        boolean flag = true;
         try {
             if (table != null)
                 table.clear();
-
 
             if (path != null) {
                 Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
@@ -249,15 +266,19 @@ public class Controller_SeniorQuery implements Initializable {
                 connection.close();
             } else {
                 errorInfoDialog("请选择csv类型数据文件");
+                flag = false;
+
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return flag;
     }
 
     //从数据库中获取原始数据
-    private void readDataFromDatabase(String databaseName, String tableName) {
+    private boolean readDataFromDatabase(String databaseName, String tableName) {
+        boolean flag = true;
         try {
             if (table != null)
                 table.clear();
@@ -280,11 +301,13 @@ public class Controller_SeniorQuery implements Initializable {
                 connection.close();//关闭数据库连接
             } else {
                 errorInfoDialog("请选择db类型数据文件");
+                flag = false;
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return flag;
     }
 
     //从www.emsc-csem.org/Earthquake/网页抓取数据
@@ -401,20 +424,8 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    //单选按钮组配置
+    //单选按钮组及浏览文本框配置
     private void radioButtonConfig() {
-
-        radioButton_fromCSV.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                textField_browse.clear();
-            }
-        });
-
-        radioButton_fromDB.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                textField_browse.clear();
-            }
-        });
 
         radioButton_fromWeb.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -423,8 +434,16 @@ public class Controller_SeniorQuery implements Initializable {
                 textField_browse.setDisable(true);
             } else {
                 button_browse.setDisable(false);
-                textField_browse.clear();
                 textField_browse.setDisable(false);
+            }
+        });
+        textField_browse.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.equals(oldValue))
+                    isChangedFile=true;
+                else
+                    isChangedFile=false;
             }
         });
 
@@ -433,35 +452,38 @@ public class Controller_SeniorQuery implements Initializable {
         radioButton_fromDB.setToggleGroup(toggleGroup);
         radioButton_fromWeb.setToggleGroup(toggleGroup);
         radioButton_fromCSV.setSelected(true);
-
     }
 
-
+    private Map<String,String[]> plates=new HashMap<>();
+    private    Map<String,String> areas=new HashMap<>();
     //多选下拉框配置
     private void comboBoxConfig() {
-        ObservableList<String> areas = FXCollections.observableArrayList();
-        ArrayList<String> plate1 = new ArrayList<>();
-        ArrayList<String> plate2 = new ArrayList<>();
+
+
         try {
             Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
             Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(" SELECT NAME FROM plates ");
+            ResultSet resultSet = statement.executeQuery(" SELECT code,name FROM plates ");
+            areas.put("All","All");
             while (resultSet.next()) {
-                areas.add(resultSet.getString("name"));
+                areas.put(resultSet.getString("name"),resultSet.getString("code"));
             }
-            ResultSet resultSet1 = statement.executeQuery("SELECT id and plate1 AND plate2 FROM plate_areas");
+            ResultSet resultSet1 = statement.executeQuery("SELECT id , plate1 , plate2 FROM plate_areas");
             while (resultSet1.next()) {
 
+                String[] tempPlates={resultSet1.getString("plate1"),resultSet1.getString("plate2")};
+                plates.put(resultSet1.getString("id"),tempPlates);
 
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        comboBox_area1.getItems().addAll(areas);
-        comboBox_area2.getItems().addAll(areas);
-
+        comboBox_area1.setValue("All");
+        comboBox_area1.getItems().addAll(areas.keySet());
+        comboBox_area2.setValue("All");
+        comboBox_area2.getItems().addAll(areas.keySet());
 
     }
 
@@ -518,16 +540,17 @@ public class Controller_SeniorQuery implements Initializable {
     public void onButtonQuery() {
         getData();
         if (!isErrorCondition()) {
-            if (radioButton_fromCSV.isSelected()) {
-                {
-                    readDataFromCsv(filePath);
+            if (isChangedFile) {
+                if (radioButton_fromCSV.isSelected()) {
+                    if (readDataFromCsv(filePath))
+                        readDataFromDatabase("earthquakes-2.db", "quakes");
+                } else if (radioButton_fromDB.isSelected()) {
+                    readDataFromDatabase(filePath, "quakes");
+                } else if (radioButton_fromWeb.isSelected()) {
+                    scrapingDataFromWebsite(2);
                     readDataFromDatabase("earthquakes-2.db", "quakes");
                 }
-            } else if (radioButton_fromDB.isSelected()) {
-                readDataFromDatabase(filePath, "quakes");
-            } else if (radioButton_fromWeb.isSelected()) {
-                scrapingDataFromWebsite(2);
-                readDataFromDatabase("earthquakes-2.db", "quakes");
+                isChangedFile=false;
             }
             showTable();
             showMap();
