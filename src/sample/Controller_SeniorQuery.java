@@ -196,10 +196,8 @@ public class Controller_SeniorQuery implements Initializable {
         String plate2 = plates.get(area_id)[1];
         String selectPlate1 = areas.get(getPlate1());
         String selectPlate2 = areas.get(getPlate2());
-        System.out.print(selectPlate1 + " " + plate1 + " " + selectPlate2 + " " + plate2 + " ");
         if ((selectPlate1.equals("All") && selectPlate1.equals("All")) || (selectPlate2.equals("All") && plate1.equals(selectPlate1)) || (selectPlate1.equals("All") && plate2.equals(selectPlate2)) || (plate1.equals(selectPlate1) && plate2.equals(selectPlate2)))
             flag = true;
-        System.out.println((selectPlate1.equals("All") && selectPlate1.equals("All")) + " " + (selectPlate2.equals("All") && plate1.equals(selectPlate1)) + " " + (selectPlate1.equals("All") && plate2.equals(selectPlate2)) + " " + (plate1.equals(selectPlate1) && plate2.equals(selectPlate2)));
         return flag;
     }
 
@@ -270,7 +268,6 @@ public class Controller_SeniorQuery implements Initializable {
         try {
             if (table != null)
                 table.clear();
-
 
                 String drive = "org.sqlite.JDBC";
                 Class.forName(drive);// 加载驱动,连接sqlite的jdbc
