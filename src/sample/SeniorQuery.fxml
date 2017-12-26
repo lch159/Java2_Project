@@ -46,7 +46,7 @@
                                         </Pane>
                                         <Pane fx:id="textFiled_browse" prefHeight="50.0" prefWidth="450.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <TextField fx:id="textField_browse" layoutX="18.0" layoutY="7.0" prefWidth="417.0" />
+                                                <TextField fx:id="textField_browse" layoutX="18.0" layoutY="7.0" prefWidth="417.0" promptText="请选择文件" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
