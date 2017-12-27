@@ -1,5 +1,6 @@
 package sample;
 
+import com.csvreader.CsvReader;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -163,14 +164,17 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To judge whether the textfield is empty
+     *
      * @param textField
      * @return true when the textfield is empty
      */
     private boolean isContentEmpty(TextField textField) {
         return textField.getText().isEmpty();
     }
+
     /**
      * To judge whether the textfield is empty
+     *
      * @param datePicker
      * @return true when the textfield is empty
      */
@@ -180,6 +184,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To acquire the starting date
+     *
      * @return the start date entered by the user or 2017-01-01 when nothing entered
      */
     private String getStart_Date() {
@@ -188,6 +193,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To acquire the end date
+     *
      * @return the end date entered by the user or 2017-12-31 when nothing entered
      */
     private String getEnd_Date() {
@@ -197,55 +203,70 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To acquire the starting latitude
+     *
      * @return the starting latitude entered by the user or -90 when nothing entered
      */
     private Double getStart_latitude() {
         return isContentEmpty(textField_latitude_start) ? -90 : Double.parseDouble(textField_latitude_start.getText().trim());
     }
+
     /**
      * To acquire the end latitude
+     *
      * @return the end latitude entered by the user or 90 when nothing entered
      */
     private Double getEnd_latitude() {
         return isContentEmpty(textField_latitude_end) ? 90 : Double.parseDouble(textField_latitude_end.getText().trim());
     }
+
     /**
      * To acquire the starting longitude
+     *
      * @return the starting longitude entered by the user or -180 when nothing entered
      */
     private Double getStart_longitude() {
         return isContentEmpty(textField_longitude_start) ? -180 : Double.parseDouble(textField_longitude_start.getText().trim());
     }
+
     /**
      * To acquire the end longitude
+     *
      * @return the end longitude entered by the user or 180 when nothing entered
      */
     private Double getEnd_longitude() {
         return isContentEmpty(textField_longitude_end) ? 180 : Double.parseDouble(textField_longitude_end.getText().trim());
     }
+
     /**
      * To acquire the starting depth
+     *
      * @return the starting depth entered by the user or -1000 when nothing entered
      */
     private Double getStart_depth() {
         return isContentEmpty(textField_depth_start) ? -1000 : Double.parseDouble(textField_depth_start.getText().trim());
     }
+
     /**
      * To acquire the end depth
+     *
      * @return the end depth entered by the user or 1000 when nothing entered
      */
     private Double getEnd_depth() {
         return isContentEmpty(textField_depth_end) ? 1000 : Double.parseDouble(textField_depth_end.getText().trim());
     }
+
     /**
      * To acquire the starting intensity
+     *
      * @return the starting intensity entered by the user or 0 when nothing entered
      */
     private Double getStart_magnitude() {
         return isContentEmpty(textField_magnitude_start) ? 0 : Double.parseDouble(textField_magnitude_start.getText().trim());
     }
+
     /**
      * To acquire the end intensity
+     *
      * @return the end intensity entered by the user or 10 when nothing entered
      */
     private Double getEnd_magnitude() {
@@ -254,13 +275,16 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To acquire the first plate
+     *
      * @return the first plate chosen by the user or 10 when nothing entered
      */
     private String getPlate1() {
         return String.valueOf(comboBox_area1.getValue());
     }
+
     /**
      * To acquire the second plate
+     *
      * @return the second plate chosen by the user or 10 when nothing entered
      */
     private String getPlate2() {
@@ -271,8 +295,10 @@ public class Controller_SeniorQuery implements Initializable {
     private String getRegion() {
         return String.valueOf(comboBox_region.getValue());
     }
+
     /**
      * To set starting date
+     *
      * @param date starting date entered by user
      */
     private void setStartDate(String date) {
@@ -281,8 +307,10 @@ public class Controller_SeniorQuery implements Initializable {
         start_month = Double.parseDouble(startDate[1]);
         start_day = Double.parseDouble(startDate[2]);
     }
+
     /**
      * To set end date
+     *
      * @param date end date entered by user
      */
     private void setEndDate(String date) {
@@ -295,9 +323,10 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To judge whether each data is in the range query
+     *
      * @param value the current value to be tested
      * @param start lower bound
-     * @param end upper bound
+     * @param end   upper bound
      * @return true when the current value is between the lower bound and the upper bound
      */
     private boolean isFitValue(Double value, Double start, Double end) {
@@ -306,8 +335,9 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To judge whether each data is in the chosen area or plate
+     *
      * @param area_id the id of each earthquake
-     * @param region the region where earthquake happened
+     * @param region  the region where earthquake happened
      * @return true when the earthquake is in the chosen area or plate
      */
     private boolean isSelectedArea(String region, String area_id) {
@@ -318,6 +348,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To judge whether each data is fit in all searching conditions
+     *
      * @param elem a string array with all data stored
      * @return true when the earthquake is fit in all searching conditions
      */
@@ -379,6 +410,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To acquire earthquake data from a csv file
+     *
      * @param path the path of the csv file
      */
     private void readDataFromCsv(String path) {
@@ -388,13 +420,13 @@ public class Controller_SeniorQuery implements Initializable {
                 table.clear();
 
 
-                Class.forName("org.sqlite.JDBC");// Loading the driver and connect to sqlite
-                Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
-                Statement clearData = connection.createStatement();
-                clearData.execute(" delete from quakes");
-                CsvReader earthquakeFile = new CsvReader(path);
-                earthquakeFile.readHeaders();
-                while (earthquakeFile.readRecord()) {
+            Class.forName("org.sqlite.JDBC");// Loading the driver and connect to sqlite
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+            Statement clearData = connection.createStatement();
+            clearData.execute(" delete from quakes");
+            CsvReader earthquakeFile = new CsvReader(path);
+            earthquakeFile.readHeaders();
+            while (earthquakeFile.readRecord()) {
 
                 String[] values = earthquakeFile.getValues();
                 try {
@@ -422,29 +454,30 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * to acquire earthquake data from database
+     *
      * @param databaseName the name of the database
-     * @param tableName the name of the table
+     * @param tableName    the name of the table
      */
     private void readDataFromDatabase(String databaseName, String tableName) {
         try {
             if (table != null)
                 table.clear();
 
-                String drive = "org.sqlite.JDBC";
-                Class.forName(drive);//Loading the driver and connect to sqlite
-                Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
-                Statement statement = connection.createStatement();
-                ResultSet rSet = statement.executeQuery("select * from " + tableName);//Query database, put searched data in the resultset
-                while (rSet.next()) {            //Traverse the resultset
-                    String[] rowData = new String[8];
-                    for (int i = 1; i <= 8; i++) {
-                        rowData[i - 1] = rSet.getString(i);
-                    }
-                    regions.add(rowData[6]);
-                    table.add(rowData);
+            String drive = "org.sqlite.JDBC";
+            Class.forName(drive);//Loading the driver and connect to sqlite
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
+            Statement statement = connection.createStatement();
+            ResultSet rSet = statement.executeQuery("select * from " + tableName);//Query database, put searched data in the resultset
+            while (rSet.next()) {            //Traverse the resultset
+                String[] rowData = new String[8];
+                for (int i = 1; i <= 8; i++) {
+                    rowData[i - 1] = rSet.getString(i);
                 }
-                rSet.close();//Close resultset
-                connection.close();//close database connection
+                regions.add(rowData[6]);
+                table.add(rowData);
+            }
+            rSet.close();//Close resultset
+            connection.close();//close database connection
             comboBox_region.getItems().addAll(regions);
 
         } catch (Exception e) {
@@ -454,6 +487,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To acquire earthquake data by scraping from web page www.emsc-csem.org/Earthquake/
+     *
      * @param pages the website of the web page
      */
     private void scrapingDataFromWebsite(int pages) {
@@ -464,7 +498,7 @@ public class Controller_SeniorQuery implements Initializable {
             Statement clearData = connection.createStatement();
             clearData.execute(" delete from quakes");
 
-            Set<String> lastIDs =new HashSet<>();
+            Set<String> lastIDs = new HashSet<>();
             lastIDs.add("0");
             for (int i = 1; i <= pages; i++) {
                 String url = String.valueOf(new StringBuilder("https://www.emsc-csem.org/Earthquake/?view=").append(i));
@@ -486,11 +520,10 @@ public class Controller_SeniorQuery implements Initializable {
                         rowData[6] = elem.getElementsByClass("tb_region").get(0).text();
 
                         //Store the scraped data in the database
-                        if (lastIDs.contains(elem.id()))
-                        {
+                        if (lastIDs.contains(elem.id())) {
                             lastIDs.remove(elem.id());
                             continue;
-                        }else {
+                        } else {
                             lastIDs.add(elem.id());
                         }
 
@@ -524,11 +557,10 @@ public class Controller_SeniorQuery implements Initializable {
      * To show the acquired data in a table
      */
     private void showTable() {
-        if (!data.isEmpty())
-        {
+        if (!data.isEmpty()) {
             data.clear();
             for (int i = 0; i < 5; i++) {
-                numOfMagnitude.put(i,new LinkedList<>());
+                numOfMagnitude.put(i, new LinkedList<>());
             }
         }
 
@@ -559,7 +591,7 @@ public class Controller_SeniorQuery implements Initializable {
                 }
             }
         }
-        label_state.setText(table.size()+" earthquakes been queried");
+        label_state.setText(table.size() + " earthquakes been queried");
         tableView_table.setItems(data);
     }
 
@@ -626,6 +658,7 @@ public class Controller_SeniorQuery implements Initializable {
 
         barChart_bc.getData().add(series);
     }
+
     /**
      * Configuration of radio buttons
      */
@@ -766,6 +799,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * Configuration of error information dialog
+     *
      * @param info The error information
      */
     private void errorInfoDialog(String info) {
@@ -778,6 +812,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * Different error conditions
+     *
      * @return true when error happened
      */
     private boolean isErrorCondition() {
@@ -830,6 +865,7 @@ public class Controller_SeniorQuery implements Initializable {
     public void onMenuItemExit() {
         System.exit(0);
     }
+
     /**
      * The event of the query button
      */
@@ -841,7 +877,7 @@ public class Controller_SeniorQuery implements Initializable {
                     if (textField_browse.getText().contains(".csv")) {
                         readDataFromCsv(textField_browse.getText());
                         readDataFromDatabase("earthquakes-2.db", "quakes");
-                    }else {
+                    } else {
                         errorInfoDialog("Please select the csv file");
                     }
 
@@ -911,6 +947,7 @@ public class Controller_SeniorQuery implements Initializable {
 
     /**
      * To initialize the GUI
+     *
      * @param location
      * @param resources
      */
@@ -921,6 +958,9 @@ public class Controller_SeniorQuery implements Initializable {
         for (int i = 0; i < 5; i++) {
             numOfMagnitude.put(i, new LinkedList<>());
         }
+
+
+
 
         tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
         tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());

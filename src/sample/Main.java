@@ -25,14 +25,13 @@ import java.io.FileNotFoundException;
 public class Main extends Application {
 
     /**
-     *
      * @param primaryStage
      * @throws Exception
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("SeniorQuery.fxml"));
-        Scene scene = new Scene(root, root.getLayoutX(),root.getLayoutY());
+        Scene scene = new Scene(root, root.getLayoutX(), root.getLayoutY());
         primaryStage.setTitle("Earthquake Query");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -43,7 +42,6 @@ public class Main extends Application {
     }
 
     /**
-     *
      * @param args
      */
     public static void main(String[] args) {
