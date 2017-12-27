@@ -6,6 +6,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -13,6 +18,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -103,6 +109,20 @@ public class Controller_SeniorQuery implements Initializable {
     RadioButton radioButton_fiftyMinutes;
     @FXML
     RadioButton radioButton_day;
+    @FXML
+    Label label_state;
+    @FXML
+    MenuItem menuItem_scrapping;
+    @FXML
+    MenuItem menuItem_openFile;
+    @FXML
+    MenuItem menuItem_exit;
+    @FXML
+    CategoryAxis barChart_xAxis;
+    @FXML
+    NumberAxis barChart_yAxis;
+    @FXML
+    BarChart barChart_bc;
 
 
     private static Double start_year;
@@ -120,6 +140,7 @@ public class Controller_SeniorQuery implements Initializable {
     private static Double start_magnitude;
     private static Double end_magnitude;
     private ObservableList<Earthquake> data = FXCollections.observableArrayList();//与tableview绑定的数据
+    private ObservableList<String> magnitudeData = FXCollections.observableArrayList();
     private static ArrayList<String[]> table = new ArrayList<>();//存储查询到的数据
     private static String fileType;//选择文件类型
     private static List<String> filePostFix;//选择文件后缀
@@ -127,6 +148,9 @@ public class Controller_SeniorQuery implements Initializable {
     private boolean isChangedFile = false;//是否改变了文件源
     private Map<String, String[]> plates = new HashMap<>();
     private Map<String, String> areas = new HashMap<>();
+    private static Set<String> regions = new HashSet<>();
+    private Map<Integer, LinkedList<String>> numOfMagnitude = new TreeMap<>();
+
 
     //判断文本框内是否为空
     private boolean isContentEmpty(TextField textField) {
@@ -188,7 +212,7 @@ public class Controller_SeniorQuery implements Initializable {
         return String.valueOf(comboBox_area2.getValue());
     }
 
-    private String getRegion(){
+    private String getRegion() {
         return String.valueOf(comboBox_region.getValue());
     }
 
@@ -212,28 +236,51 @@ public class Controller_SeniorQuery implements Initializable {
         return value >= start && value <= end;
     }
 
-    private boolean isSelectedArea(String region,String area_id) {
-        boolean flag = false;
-        if (radioButton_region.isSelected()){
-            if (getRegion().equals("All")||getRegion().equals(region))
-                flag=true;
-        }else if (radioButton_plate.isSelected()){
-            String plate1 = plates.get(area_id)[0];
-            String plate2 = plates.get(area_id)[1];
-            String selectPlate1 = areas.get(getPlate1());
-            String selectPlate2 = areas.get(getPlate2());
-            if ((selectPlate1.equals("All") && selectPlate1.equals("All")) || (selectPlate2.equals("All") && plate1.equals(selectPlate1)) || (selectPlate1.equals("All") && plate2.equals(selectPlate2)) || (plate1.equals(selectPlate1) && plate2.equals(selectPlate2)))
-                flag = true;
-        }
+    private boolean isSelectedArea(String region, String area_id) {
 
-        return flag;
+        return radioButton_region.isSelected() && (getRegion().equals("All") || getRegion().equals(region)) || radioButton_plate.isSelected() && ((areas.get(getPlate1()).equals("All") && areas.get(getPlate1()).equals("All")) || (areas.get(getPlate2()).equals("All") && plates.get(area_id)[0].equals(areas.get(getPlate1())))
+                || (areas.get(getPlate1()).equals("All") && plates.get(area_id)[1].equals(areas.get(getPlate2()))) || (plates.get(area_id)[0].equals(areas.get(getPlate1())) && plates.get(area_id)[1].equals(areas.get(getPlate2()))));
     }
 
     //判断该次地震所有数据是否符合要求
     private boolean isFitValues(String[] elem) {
         String[] tempDate = elem[1].split("[ -]");
-        return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
-                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude) && isSelectedArea(elem[6],elem[7]);
+        String[] tempTime = tempDate[3].split("[:]");
+        boolean flag = false;
+
+        if (radioButton_null.isSelected())
+            flag = isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day);
+        else if (radioButton_fiftyMinutes.isSelected()) {
+            Calendar calendar = Calendar.getInstance();
+
+            calendar.add(Calendar.MINUTE, -50);
+            int nyear = calendar.get(Calendar.YEAR);
+            int nmonth = calendar.get(Calendar.MONTH) + 1;
+            int ndate = calendar.get(Calendar.DATE);
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int minute = calendar.get(Calendar.MINUTE);
+
+            flag = Integer.parseInt(tempDate[0]) == nyear && Integer.parseInt(tempDate[1]) == nmonth && Integer.parseInt(tempDate[2]) == ndate && ((Integer.parseInt(tempTime[0]) == hour && Integer.parseInt(tempTime[1]) >= minute) || (Integer.parseInt(tempTime[0]) > hour));
+
+
+        }
+        if (radioButton_day.isSelected()) {
+            Calendar calendar = Calendar.getInstance();
+
+            calendar.add(Calendar.HOUR, -24);
+            int nyear = calendar.get(Calendar.YEAR);
+            int nmonth = calendar.get(Calendar.MONTH) + 1;
+            int ndate = calendar.get(Calendar.DATE);
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int minute = calendar.get(Calendar.MINUTE);
+
+            flag = Integer.parseInt(tempDate[0]) == nyear && Integer.parseInt(tempDate[1]) == nmonth && (Integer.parseInt(tempDate[2]) > ndate || (Integer.parseInt(tempDate[2]) == ndate && ((Integer.parseInt(tempTime[0]) == hour && Integer.parseInt(tempTime[1]) >= minute) || (Integer.parseInt(tempTime[0]) > hour))));
+
+        }
+
+
+        return flag && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
+                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude) && isSelectedArea(elem[6], elem[7]);
     }
 
     //获取文本框内填入的内容
@@ -295,7 +342,6 @@ public class Controller_SeniorQuery implements Initializable {
         try {
             if (table != null)
                 table.clear();
-
 
             String drive = "org.sqlite.JDBC";
             Class.forName(drive);// 加载驱动,连接sqlite的jdbc
@@ -372,10 +418,14 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
     //将data中数据显示到表格
-    private static Set<String> regions=new HashSet<>();
     private void showTable() {
         if (!data.isEmpty())
+        {
             data.clear();
+            for (int i = 0; i < 5; i++) {
+                numOfMagnitude.put(i,new LinkedList<>());
+            }
+        }
 
         for (String[] elem : table) {
             if (isFitValues(elem)) {
@@ -390,6 +440,18 @@ public class Controller_SeniorQuery implements Initializable {
                 stringEarthquake.setArea_id(elem[7]);
                 Earthquake earthquake = new Earthquake(stringEarthquake);
                 data.add(earthquake);
+                double magnitude = Double.parseDouble(elem[5]);
+                if (magnitude >= 1 && magnitude < 3) {
+                    numOfMagnitude.get(0).add(elem[0]);
+                } else if (magnitude >= 3 && magnitude < 4.5) {
+                    numOfMagnitude.get(1).add(elem[1]);
+                } else if (magnitude >= 4.5 && magnitude < 6) {
+                    numOfMagnitude.get(2).add(elem[1]);
+                } else if (magnitude >= 6 && magnitude < 7) {
+                    numOfMagnitude.get(3).add(elem[1]);
+                } else if (magnitude >= 7) {
+                    numOfMagnitude.get(4).add(elem[1]);
+                }
             }
         }
         tableView_table.setItems(data);
@@ -434,13 +496,33 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
+    //将data中数据显示到柱形图
+    private void showBarChart() {
+        if (!magnitudeData.isEmpty()) {
+            magnitudeData.clear();
+            barChart_bc.getData().clear();
+        }
+         XYChart.Series<String, Integer> series = new XYChart.Series();
+
+        String[] magnitudes = {"[1,3)", "[3,4.5)", "[4.5,6)", "[6,7)", "[7,∞)"};
+
+        magnitudeData.addAll(magnitudes);
+        barChart_xAxis.setCategories(magnitudeData);
+        series.setName("barChart");
+
+        for (int i = 0; i < 5; i++) {
+            series.getData().add(new XYChart.Data<>(magnitudeData.get(i), numOfMagnitude.get(i).size()));
+        }
+
+        barChart_bc.getData().add(series);
+    }
+
     //单选按钮组及浏览文本框配置
     private void radioButtonConfig() {
         radioButton_fromCSV.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue)
                 textField_browse.clear();
         });
-
         radioButton_fromDB.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue)
                 textField_browse.clear();
@@ -456,12 +538,8 @@ public class Controller_SeniorQuery implements Initializable {
             }
         });
         textField_browse.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.equals(oldValue))
-                isChangedFile = true;
-            else
-                isChangedFile = false;
+            isChangedFile = !newValue.equals(oldValue);
         });
-
         ToggleGroup toggleGroup = new ToggleGroup();
         radioButton_fromCSV.setToggleGroup(toggleGroup);
         radioButton_fromDB.setToggleGroup(toggleGroup);
@@ -470,8 +548,7 @@ public class Controller_SeniorQuery implements Initializable {
 
 
         radioButton_region.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue)
-            {
+            if (newValue) {
                 label_region.setVisible(true);
                 comboBox_region.setVisible(true);
                 label_plate1.setVisible(false);
@@ -481,15 +558,14 @@ public class Controller_SeniorQuery implements Initializable {
             }
         });
         radioButton_plate.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue){
+            if (newValue) {
                 label_region.setVisible(false);
                 comboBox_region.setVisible(false);
                 label_plate1.setVisible(true);
                 label_plate2.setVisible(true);
                 comboBox_area1.setVisible(true);
                 comboBox_area2.setVisible(true);
-            }else
-            {
+            } else {
                 label_region.setVisible(false);
                 comboBox_region.setVisible(false);
                 label_plate1.setVisible(false);
@@ -499,10 +575,43 @@ public class Controller_SeniorQuery implements Initializable {
             }
         });
 
-        ToggleGroup toggleGroup1=new ToggleGroup();
+        ToggleGroup toggleGroup1 = new ToggleGroup();
         radioButton_region.setToggleGroup(toggleGroup1);
         radioButton_plate.setToggleGroup(toggleGroup1);
         radioButton_region.setSelected(true);
+
+        radioButton_null.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    datePicker_start.setDisable(false);
+                    datePicker_end.setDisable(false);
+                }
+            }
+        });
+        radioButton_fiftyMinutes.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    datePicker_start.setDisable(true);
+                    datePicker_end.setDisable(true);
+                }
+            }
+        });
+        radioButton_day.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    datePicker_start.setDisable(true);
+                    datePicker_end.setDisable(true);
+                }
+            }
+        });
+        radioButton_null.setSelected(true);
+        ToggleGroup toggleGroup2 = new ToggleGroup();
+        radioButton_null.setToggleGroup(toggleGroup2);
+        radioButton_fiftyMinutes.setToggleGroup(toggleGroup2);
+        radioButton_day.setToggleGroup(toggleGroup2);
     }
 
     //多选下拉框配置
@@ -539,27 +648,6 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
-    //文件选择器配置
-    private void chooseFileConfig() {
-        if (radioButton_fromCSV.isSelected()) {
-            filePostFix = new LinkedList<>();
-            fileType = "CSV";
-            filePostFix.add("*.csv");
-        } else if (radioButton_fromDB.isSelected()) {
-            filePostFix = new LinkedList<>();
-            fileType = "Database";
-            filePostFix.add("*.db");
-            filePostFix.add("*.sqlite");
-        }
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("请选择文件来源");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType, filePostFix));
-        File file = fileChooser.showOpenDialog(null);
-        if (file != null) {
-            textField_browse.setText(file.getAbsolutePath());
-        }
-    }
-
     //错误信息框弹出配置
     private void errorInfoDialog(String info) {
         Alert warning = new Alert(Alert.AlertType.WARNING, info);
@@ -585,6 +673,34 @@ public class Controller_SeniorQuery implements Initializable {
         else flag = false;
 
         return flag;
+    }
+
+    //打开文件响应事件
+    public void onMenuItemOpenFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("请选择文件来源");
+        List<String> tempFileType = new LinkedList<>();
+        tempFileType.add("*.db");
+        tempFileType.add("*.sqlite");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("CSV", "*.csv"), new FileChooser.ExtensionFilter("database", tempFileType));
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            if (file.getName().contains(".csv"))
+                radioButton_fromCSV.setSelected(true);
+            if (file.getName().contains(".db") || file.getName().contains(".sqlite"))
+                radioButton_fromDB.setSelected(true);
+            textField_browse.setText(file.getAbsolutePath());
+        }
+    }
+
+    //数据自网页响应事件
+    public void onMenuItemDataFromWebsite() {
+        radioButton_fromWeb.setSelected(true);
+    }
+
+    //退出程序响应事件
+    public void onMenuItemExit() {
+        System.exit(0);
     }
 
     //查询按钮响应事件
@@ -613,6 +729,7 @@ public class Controller_SeniorQuery implements Initializable {
             }
             showTable();
             showMap();
+            showBarChart();
         }
     }
 
@@ -633,11 +750,30 @@ public class Controller_SeniorQuery implements Initializable {
         ImageView mapView = imageView_map;
         pane_image.getChildren().clear();
         pane_image.getChildren().add(mapView);
+        label_state.setText("");
+        barChart_bc.getData().clear();
+
     }
 
     //浏览按钮响应事件
     public void onButtonBrowse() {
-        chooseFileConfig();
+        if (radioButton_fromCSV.isSelected()) {
+            filePostFix = new LinkedList<>();
+            fileType = "CSV";
+            filePostFix.add("*.csv");
+        } else if (radioButton_fromDB.isSelected()) {
+            filePostFix = new LinkedList<>();
+            fileType = "Database";
+            filePostFix.add("*.db");
+            filePostFix.add("*.sqlite");
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("请选择文件来源");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType, filePostFix));
+        File file = fileChooser.showOpenDialog(null);
+        if (file != null) {
+            textField_browse.setText(file.getAbsolutePath());
+        }
     }
 
     //窗口初始化
@@ -645,6 +781,9 @@ public class Controller_SeniorQuery implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         radioButtonConfig();
         comboBoxConfig();
+        for (int i = 0; i < 5; i++) {
+            numOfMagnitude.put(i, new LinkedList<>());
+        }
 
         tableColumn_ID.setCellValueFactory(cellDate -> cellDate.getValue().idProperty());
         tableColumn_magnitude.setCellValueFactory(cellDate -> cellDate.getValue().magnitudeProperty());

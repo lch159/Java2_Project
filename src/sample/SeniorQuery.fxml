@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -26,32 +27,48 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<GridPane alignment="center" hgap="10" prefHeight="1100.0" prefWidth="1200.0" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller_SeniorQuery">
+<GridPane alignment="center" hgap="10" prefHeight="1000.0" prefWidth="1200.0" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller_SeniorQuery">
     <children>
-        <VBox prefHeight="1100.0" prefWidth="1200.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+        <VBox prefHeight="1000.0" prefWidth="1200.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
             <children>
                 <SplitPane orientation="VERTICAL" prefHeight="400.0" prefWidth="1200.0">
                     <items>
                         <VBox prefHeight="400.0" prefWidth="1000.0">
                             <children>
-                                <Pane prefHeight="25.0" prefWidth="1200.0" VBox.vgrow="ALWAYS" />
+                        <MenuBar prefHeight="25.0">
+                          <menus>
+                            <Menu mnemonicParsing="false" text="File">
+                              <items>
+                                <MenuItem fx:id="menuItem_openFile" mnemonicParsing="false" onAction="#onMenuItemOpenFile" text="打开本地文档" />
+                                    <MenuItem fx:id="menuItem_scrapping" mnemonicParsing="false" onAction="#onMenuItemDataFromWebsite" text="读取数据自网页" />
+                                    <MenuItem mnemonicParsing="false" text="导出表格数据" />
+                                    <MenuItem fx:id="menuItem_exit" mnemonicParsing="false" onAction="#onMenuItemExit" text="退出程序" />
+                              </items>
+                            </Menu>
+                            <Menu mnemonicParsing="false" text="Help">
+                              <items>
+                                <MenuItem mnemonicParsing="false" text="About" />
+                              </items>
+                            </Menu>
+                          </menus>
+                        </MenuBar>
                                 <HBox prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
                                     <children>
                                         <Pane prefHeight="50.0" prefWidth="600.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <RadioButton fx:id="radioButton_fromCSV" layoutX="14.0" layoutY="12.0" mnemonicParsing="false" text="获取数据自csv文件" />
-                                                <RadioButton fx:id="radioButton_fromDB" layoutX="224.0" layoutY="13.0" mnemonicParsing="false" text="获取数据自db文件" />
-                                                <RadioButton fx:id="radioButton_fromWeb" layoutX="429.0" layoutY="13.0" mnemonicParsing="false" text="获取数据自Web" />
+                                                <RadioButton fx:id="radioButton_fromCSV" layoutX="14.0" layoutY="21.0" mnemonicParsing="false" text="获取数据自csv文件" />
+                                                <RadioButton fx:id="radioButton_fromDB" layoutX="223.0" layoutY="21.0" mnemonicParsing="false" text="获取数据自db文件" />
+                                                <RadioButton fx:id="radioButton_fromWeb" layoutX="431.0" layoutY="21.0" mnemonicParsing="false" text="获取数据自Web" />
                                             </children>
                                         </Pane>
                                         <Pane fx:id="textFiled_browse" prefHeight="50.0" prefWidth="450.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <TextField fx:id="textField_browse" layoutX="18.0" layoutY="7.0" prefWidth="417.0" promptText="请选择文件" />
+                                                <TextField fx:id="textField_browse" layoutX="16.0" layoutY="17.0" prefWidth="417.0" promptText="请选择文件" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="150.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Button fx:id="button_browse" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" onAction="#onButtonBrowse" text="浏   览" />
+                                                <Button fx:id="button_browse" layoutX="14.0" layoutY="17.0" mnemonicParsing="false" onAction="#onButtonBrowse" text="浏   览" />
                                             </children>
                                         </Pane>
                                     </children>
@@ -60,26 +77,26 @@
                                 <Separator prefWidth="200.0" />
                                 <HBox prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Pane prefHeight="50.0" prefWidth="300.0">
+                                        <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="14.0" layoutY="19.0" text="时间：" />
-                                                <DatePicker fx:id="datePicker_start" layoutX="67.0" layoutY="14.0" promptText="Eg : XXXX-XX-XX" />
+                                                <Label layoutX="14.0" layoutY="21.0" text="时间：" />
+                                                <DatePicker fx:id="datePicker_start" layoutX="96.0" layoutY="17.0" prefWidth="190.0" promptText="Eg : XXXX-XX-XX" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="34.0" layoutY="19.0" text="至" />
-                                                <DatePicker fx:id="datePicker_end" layoutX="74.0" layoutY="14.0" promptText="Eg : XXXX-XX-XX" />
+                                                <Label layoutX="14.0" layoutY="21.0" text="至" />
+                                                <DatePicker fx:id="datePicker_end" layoutX="55.0" layoutY="17.0" prefWidth="190.0" promptText="Eg : XXXX-XX-XX" />
                                             </children>
                                             <HBox.margin>
                                                 <Insets />
                                             </HBox.margin>
                                         </Pane>
-                              <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
+                              <Pane prefHeight="50.0" prefWidth="600.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <RadioButton fx:id="radioButton_null" layoutY="19.0" mnemonicParsing="false" text="无" />
-                                    <RadioButton fx:id="radioButton_fiftyMinutes" layoutX="120.0" layoutY="19.0" mnemonicParsing="false" text="最近50分钟" />
-                                    <RadioButton fx:id="radioButton_day" layoutX="259.0" layoutY="19.0" mnemonicParsing="false" text="最近24小时" />
+                                    <RadioButton fx:id="radioButton_null" layoutX="-0.0" layoutY="21.0" mnemonicParsing="false" text="无" />
+                                    <RadioButton fx:id="radioButton_fiftyMinutes" layoutX="97.0" layoutY="21.0" mnemonicParsing="false" text="最近50分钟" />
+                                    <RadioButton fx:id="radioButton_day" layoutX="216.0" layoutY="21.0" mnemonicParsing="false" text="最近24小时" />
                                  </children>
                               </Pane>
                                     </children>
@@ -91,26 +108,26 @@
                                     <children>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="14.0" layoutY="13.0" text="纬度：大于" />
-                                                <TextField fx:id="textField_latitude_start" layoutX="109.0" layoutY="10.0" prefWidth="190.0" promptText="单位：度(-90~90)" />
+                                                <Label layoutX="14.0" layoutY="21.0" text="纬度：大于" />
+                                                <TextField fx:id="textField_latitude_start" layoutX="95.0" layoutY="17.0" prefWidth="190.0" promptText="单位：度(-90~90)" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="23.0" layoutY="13.0" text="小于" />
-                                                <TextField fx:id="textField_latitude_end" layoutX="70.0" layoutY="7.0" prefWidth="190.0" promptText="单位：度(-90~90)" />
+                                                <Label layoutX="14.0" layoutY="21.0" text="小于" />
+                                                <TextField fx:id="textField_latitude_end" layoutX="55.0" layoutY="17.0" prefWidth="190.0" promptText="单位：度(-90~90)" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutY="13.0" text="经度：大于" />
-                                                <TextField fx:id="textField_longitude_start" layoutX="97.0" layoutY="8.0" prefWidth="190.0" promptText="单位：度(-180~180)" />
+                                                <Label layoutY="21.0" text="经度：大于" />
+                                                <TextField fx:id="textField_longitude_start" layoutX="75.0" layoutY="17.0" prefWidth="190.0" promptText="单位：度(-180~180)" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="14.0" layoutY="13.0" text="小于" />
-                                                <TextField fx:id="textField_longitude_end" layoutX="63.0" layoutY="8.0" prefWidth="190.0" promptText="单位：度(-180~180)" />
+                                                <Label layoutY="21.0" text="小于" />
+                                                <TextField fx:id="textField_longitude_end" layoutX="55.0" layoutY="17.0" prefWidth="190.0" promptText="单位：度(-180~180)" />
                                             </children>
                                         </Pane>
                                     </children>
@@ -119,26 +136,26 @@
                                     <children>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="14.0" layoutY="14.0" text="深度：大于" />
-                                                <TextField fx:id="textField_depth_start" layoutX="109.0" layoutY="9.0" prefWidth="190.0" promptText="单位：千米" />
+                                                <Label layoutX="14.0" layoutY="21.0" text="深度：大于" />
+                                                <TextField fx:id="textField_depth_start" layoutX="95.0" layoutY="17.0" prefWidth="190.0" promptText="单位：千米" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="24.0" layoutY="14.0" text="小于" />
-                                                <TextField fx:id="textField_depth_end" layoutX="71.0" layoutY="8.0" prefWidth="190.0" promptText="单位：千米" />
+                                                <Label layoutX="14.0" layoutY="21.0" text="小于" />
+                                                <TextField fx:id="textField_depth_end" layoutX="55.0" layoutY="17.0" prefWidth="190.0" promptText="单位：千米" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <TextField fx:id="textField_magnitude_start" layoutX="97.0" layoutY="8.0" prefWidth="190.0" promptText="Eg : X.X" />
-                                                <Label layoutY="14.0" text="震级：大于" />
+                                                <TextField fx:id="textField_magnitude_start" layoutX="75.0" layoutY="17.0" prefWidth="190.0" promptText="Eg : X.X" />
+                                                <Label layoutY="21.0" text="震级：大于" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="14.0" layoutY="14.0" text="小于" />
-                                                <TextField fx:id="textField_magnitude_end" layoutX="65.0" layoutY="8.0" prefWidth="190.0" promptText="Eg : X.X" />
+                                                <Label layoutY="21.0" text="小于" />
+                                                <TextField fx:id="textField_magnitude_end" layoutX="55.0" layoutY="17.0" prefWidth="190.0" promptText="Eg : X.X" />
                                             </children>
                                         </Pane>
                                     </children>
@@ -147,51 +164,60 @@
                            <children>
                               <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <RadioButton fx:id="radioButton_region" layoutX="14.0" layoutY="15.0" mnemonicParsing="false" text="区域" />
-                                    <RadioButton fx:id="radioButton_plate" layoutX="150.0" layoutY="15.0" mnemonicParsing="false" text="板块" />
+                                    <RadioButton fx:id="radioButton_region" layoutX="14.0" layoutY="20.0" mnemonicParsing="false" text="区域" />
+                                    <RadioButton fx:id="radioButton_plate" layoutX="150.0" layoutY="20.0" mnemonicParsing="false" text="板块" />
                                  </children>
                               </Pane>
                               <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ComboBox fx:id="comboBox_region" layoutX="75.0" layoutY="10.0" prefWidth="150.0" />
-                                    <Label fx:id="label_region" layoutX="22.0" layoutY="15.0" text="区域" />
-                                 </children>
-                              </Pane>
-                              <Pane prefHeight="50.0" prefWidth="300.0">
-                                 <children>
-                                    <ComboBox fx:id="comboBox_area1" layoutX="102.0" layoutY="10.0" prefWidth="150.0" />
-                                    <Label fx:id="label_plate1" layoutX="35.0" layoutY="15.0" text="板块1" />
+                                    <ComboBox fx:id="comboBox_region" layoutX="55.0" layoutY="17.0" prefWidth="190.0" />
+                                    <Label fx:id="label_region" layoutX="14.0" layoutY="21.0" text="区域" />
                                  </children>
                               </Pane>
                               <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <Label fx:id="label_plate2" layoutX="14.0" layoutY="15.0" text="板块2" />
-                                    <ComboBox fx:id="comboBox_area2" layoutX="75.0" layoutY="10.0" prefWidth="150.0" />
+                                    <ComboBox fx:id="comboBox_area1" layoutX="75.0" layoutY="17.0" prefWidth="190.0" />
+                                    <Label fx:id="label_plate1" layoutY="21.0" text="板块1" />
+                                 </children>
+                              </Pane>
+                              <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label fx:id="label_plate2" layoutX="-0.0" layoutY="21.0" text="板块2" />
+                                    <ComboBox fx:id="comboBox_area2" layoutX="55.0" layoutY="17.0" prefWidth="190.0" />
                                  </children>
                               </Pane>
                            </children>
                         </HBox>
-                                <Pane prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
-                                    <children>
-                                        <Button fx:id="button_query" layoutX="470.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonQuery" text="查    询" />
-                                        <Button fx:id="button_query1" layoutX="650.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonClear" text="清    空" />
-                                    </children>
-                                </Pane>
+                        <HBox prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <Pane prefHeight="50.0" prefWidth="400.0" HBox.hgrow="ALWAYS" />
+                              <Pane prefHeight="50.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                              <Button fx:id="button_query1" layoutX="200.0" layoutY="12.0" mnemonicParsing="false" onAction="#onButtonClear" text="清    空" />
+                                              <Button fx:id="button_query" layoutX="90.0" layoutY="12.0" mnemonicParsing="false" onAction="#onButtonQuery" text="查    询" />
+                                 </children>
+                              </Pane>
+                              <Pane prefHeight="50.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label fx:id="label_state" layoutX="14.0" layoutY="21.0" />
+                                 </children></Pane>
+                           </children>
+                        </HBox>
                             </children>
                         </VBox>
                     </items>
                 </SplitPane>
-                <SplitPane prefHeight="700.0" prefWidth="1200.0">
+                <SplitPane prefHeight="600.0" prefWidth="1200.0">
                     <items>
-                        <VBox prefHeight="500.0" prefWidth="1200.0">
+                        <VBox prefHeight="600.0" prefWidth="1200.0">
                             <children>
-                                <TabPane prefHeight="800.0" prefWidth="1200.0" tabClosingPolicy="UNAVAILABLE">
+                                <TabPane prefHeight="600.0" prefWidth="1200.0" tabClosingPolicy="UNAVAILABLE">
                                     <tabs>
                                         <Tab fx:id="tabPane_table" text="显示到表格">
                                             <content>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="753.0" prefWidth="1195.0">
+                                                <AnchorPane prefHeight="570.0" prefWidth="1195.0">
                                                     <children>
-                                                        <TableView fx:id="tableView_table" prefHeight="753.0" prefWidth="1195.0">
+                                                        <TableView fx:id="tableView_table" prefHeight="570.0" prefWidth="1198.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                             <columns>
                                                                 <TableColumn fx:id="tableColumn_ID" prefWidth="75.0" text="ID" />
                                                                 <TableColumn fx:id="tableColumn_magnitude" prefWidth="87.0" text="震级" />
@@ -209,9 +235,9 @@
                                         </Tab>
                                         <Tab fx:id="tabPane_map" text="显示到地图">
                                             <content>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="853.0" prefWidth="1200.0">
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="1200.0">
                                                     <children>
-                                                        <Pane fx:id="pane_image" prefHeight="753.0" prefWidth="1200.0">
+                                                        <Pane fx:id="pane_image" prefHeight="569.0" prefWidth="1198.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                             <children>
                                                                 <ImageView fx:id="imageView_map" fitHeight="753.0" fitWidth="1200.0" pickOnBounds="true">
                                                                     <image>
@@ -224,6 +250,22 @@
                                                 </AnchorPane>
                                             </content>
                                         </Tab>
+                              <Tab text="统计图表1">
+                                <content>
+                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="570.0" prefWidth="1200.0">
+                                       <children>
+                                          <BarChart fx:id="barChart_bc" prefHeight="569.0" prefWidth="1198.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <xAxis>
+                                              <CategoryAxis fx:id="barChart_xAxis" label="Magnitudes" side="BOTTOM" />
+                                            </xAxis>
+                                            <yAxis>
+                                              <NumberAxis fx:id="barChart_yAxis" label="Amounts" side="LEFT" />
+                                            </yAxis>
+                                          </BarChart>
+                                       </children>
+                                    </AnchorPane>
+                                </content>
+                              </Tab>
                                     </tabs>
                                 </TabPane>
                             </children>
