@@ -4,7 +4,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Created by 11611423 李晨昊 on 2017/12/7.16:19
+ * This class is used to build object of each earthquake to save and operate related data.
+ *
  */
 public class Earthquake {
 

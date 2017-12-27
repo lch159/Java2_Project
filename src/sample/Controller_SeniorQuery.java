@@ -31,6 +31,15 @@ import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * This class is the core of this application. <br>
+ * This class implements GUI and functions of this application
+ *
+ * @author lichenhao
+ * @author linsen
+ * @author zhengxiaodian
+ * @version 1.00
+ */
 public class Controller_SeniorQuery implements Initializable {
 
     @FXML
@@ -139,90 +148,143 @@ public class Controller_SeniorQuery implements Initializable {
     private static Double end_depth;
     private static Double start_magnitude;
     private static Double end_magnitude;
-    private ObservableList<Earthquake> data = FXCollections.observableArrayList();//与tableview绑定的数据
+    private ObservableList<Earthquake> data = FXCollections.observableArrayList();//data related to tableview
     private ObservableList<String> magnitudeData = FXCollections.observableArrayList();
-    private static ArrayList<String[]> table = new ArrayList<>();//存储查询到的数据
-    private static String fileType;//选择文件类型
-    private static List<String> filePostFix;//选择文件后缀
-    private static Circle mark;//地图点标记
-    private boolean isChangedFile = false;//是否改变了文件源
+    private static ArrayList<String[]> table = new ArrayList<>();//Store searched data
+    private static String fileType;//select file type
+    private static List<String> filePostFix;//select file postfix
+    private static Circle mark;//mark on map
+    private boolean isChangedFile = false;//whether file source changed
     private Map<String, String[]> plates = new HashMap<>();
     private Map<String, String> areas = new HashMap<>();
     private static Set<String> regions = new HashSet<>();
     private Map<Integer, LinkedList<String>> numOfMagnitude = new TreeMap<>();
 
 
-    //判断文本框内是否为空
+    /**
+     * To judge whether the textfield is empty
+     * @param textField
+     * @return true when the textfield is empty
+     */
     private boolean isContentEmpty(TextField textField) {
         return textField.getText().isEmpty();
     }
-
+    /**
+     * To judge whether the textfield is empty
+     * @param datePicker
+     * @return true when the textfield is empty
+     */
     private boolean isContentEmpty(DatePicker datePicker) {
         return datePicker.getEditor().getText().isEmpty();
     }
 
-    //获取文本框内容
+    /**
+     * To acquire the starting date
+     * @return the start date entered by the user or 2017-01-01 when nothing entered
+     */
     private String getStart_Date() {
         return isContentEmpty(datePicker_start) ? "2017-01-01" : datePicker_start.getEditor().getText().trim();
     }
 
+    /**
+     * To acquire the end date
+     * @return the end date entered by the user or 2017-12-31 when nothing entered
+     */
     private String getEnd_Date() {
 
         return isContentEmpty(datePicker_end) ? "2017-12-31" : datePicker_end.getEditor().getText().trim();
     }
 
+    /**
+     * To acquire the starting latitude
+     * @return the starting latitude entered by the user or -90 when nothing entered
+     */
     private Double getStart_latitude() {
         return isContentEmpty(textField_latitude_start) ? -90 : Double.parseDouble(textField_latitude_start.getText().trim());
     }
-
+    /**
+     * To acquire the end latitude
+     * @return the end latitude entered by the user or 90 when nothing entered
+     */
     private Double getEnd_latitude() {
-
         return isContentEmpty(textField_latitude_end) ? 90 : Double.parseDouble(textField_latitude_end.getText().trim());
     }
-
+    /**
+     * To acquire the starting longitude
+     * @return the starting longitude entered by the user or -180 when nothing entered
+     */
     private Double getStart_longitude() {
         return isContentEmpty(textField_longitude_start) ? -180 : Double.parseDouble(textField_longitude_start.getText().trim());
     }
-
+    /**
+     * To acquire the end longitude
+     * @return the end longitude entered by the user or 180 when nothing entered
+     */
     private Double getEnd_longitude() {
         return isContentEmpty(textField_longitude_end) ? 180 : Double.parseDouble(textField_longitude_end.getText().trim());
     }
-
+    /**
+     * To acquire the starting depth
+     * @return the starting depth entered by the user or -1000 when nothing entered
+     */
     private Double getStart_depth() {
         return isContentEmpty(textField_depth_start) ? -1000 : Double.parseDouble(textField_depth_start.getText().trim());
     }
-
+    /**
+     * To acquire the end depth
+     * @return the end depth entered by the user or 1000 when nothing entered
+     */
     private Double getEnd_depth() {
         return isContentEmpty(textField_depth_end) ? 1000 : Double.parseDouble(textField_depth_end.getText().trim());
     }
-
+    /**
+     * To acquire the starting intensity
+     * @return the starting intensity entered by the user or 0 when nothing entered
+     */
     private Double getStart_magnitude() {
         return isContentEmpty(textField_magnitude_start) ? 0 : Double.parseDouble(textField_magnitude_start.getText().trim());
     }
-
+    /**
+     * To acquire the end intensity
+     * @return the end intensity entered by the user or 10 when nothing entered
+     */
     private Double getEnd_magnitude() {
         return isContentEmpty(textField_magnitude_end) ? 10 : Double.parseDouble(textField_magnitude_end.getText().trim());
     }
 
+    /**
+     * To acquire the first plate
+     * @return the first plate chosen by the user or 10 when nothing entered
+     */
     private String getPlate1() {
         return String.valueOf(comboBox_area1.getValue());
     }
-
+    /**
+     * To acquire the second plate
+     * @return the second plate chosen by the user or 10 when nothing entered
+     */
     private String getPlate2() {
         return String.valueOf(comboBox_area2.getValue());
     }
 
+
     private String getRegion() {
         return String.valueOf(comboBox_region.getValue());
     }
-
+    /**
+     * To set starting date
+     * @param date starting date entered by user
+     */
     private void setStartDate(String date) {
         String[] startDate = date.split("-");
         start_year = Double.parseDouble(startDate[0]);
         start_month = Double.parseDouble(startDate[1]);
         start_day = Double.parseDouble(startDate[2]);
     }
-
+    /**
+     * To set end date
+     * @param date end date entered by user
+     */
     private void setEndDate(String date) {
         String[] endDate = date.split("-");
         end_year = Double.parseDouble(endDate[0]);
@@ -231,18 +293,34 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
 
-    //判断该次地震的一个数据是否在范围内
+    /**
+     * To judge whether each data is in the range query
+     * @param value the current value to be tested
+     * @param start lower bound
+     * @param end upper bound
+     * @return true when the current value is between the lower bound and the upper bound
+     */
     private boolean isFitValue(Double value, Double start, Double end) {
         return value >= start && value <= end;
     }
 
+    /**
+     * To judge whether each data is in the chosen area or plate
+     * @param area_id the id of each earthquake
+     * @param region the region where earthquake happened
+     * @return true when the earthquake is in the chosen area or plate
+     */
     private boolean isSelectedArea(String region, String area_id) {
 
         return radioButton_region.isSelected() && (getRegion().equals("All") || getRegion().equals(region)) || radioButton_plate.isSelected() && ((areas.get(getPlate1()).equals("All") && areas.get(getPlate1()).equals("All")) || (areas.get(getPlate2()).equals("All") && plates.get(area_id)[0].equals(areas.get(getPlate1())))
                 || (areas.get(getPlate1()).equals("All") && plates.get(area_id)[1].equals(areas.get(getPlate2()))) || (plates.get(area_id)[0].equals(areas.get(getPlate1())) && plates.get(area_id)[1].equals(areas.get(getPlate2()))));
     }
 
-    //判断该次地震所有数据是否符合要求
+    /**
+     * To judge whether each data is fit in all searching conditions
+     * @param elem a string array with all data stored
+     * @return true when the earthquake is fit in all searching conditions
+     */
     private boolean isFitValues(String[] elem) {
         String[] tempDate = elem[1].split("[ -]");
         String[] tempTime = tempDate[3].split("[:]");
@@ -283,7 +361,9 @@ public class Controller_SeniorQuery implements Initializable {
                 && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude) && isSelectedArea(elem[6], elem[7]);
     }
 
-    //获取文本框内填入的内容
+    /**
+     * To acquire all data entered by user
+     */
     private void getData() {
         setStartDate(getStart_Date());
         setEndDate(getEnd_Date());
@@ -297,7 +377,10 @@ public class Controller_SeniorQuery implements Initializable {
         end_magnitude = getEnd_magnitude();
     }
 
-    //从csv文件中获取原始数据
+    /**
+     * To acquire earthquake data from a csv file
+     * @param path the path of the csv file
+     */
     private void readDataFromCsv(String path) {
         boolean flag = true;
         try {
@@ -305,13 +388,13 @@ public class Controller_SeniorQuery implements Initializable {
                 table.clear();
 
 
-            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
-            Statement clearData = connection.createStatement();
-            clearData.execute(" delete from quakes");
-            CsvReader earthquakeFile = new CsvReader(path);
-            earthquakeFile.readHeaders();
-            while (earthquakeFile.readRecord()) {
+                Class.forName("org.sqlite.JDBC");// Loading the driver and connect to sqlite
+                Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+                Statement clearData = connection.createStatement();
+                clearData.execute(" delete from quakes");
+                CsvReader earthquakeFile = new CsvReader(path);
+                earthquakeFile.readHeaders();
+                while (earthquakeFile.readRecord()) {
 
                 String[] values = earthquakeFile.getValues();
                 try {
@@ -337,43 +420,52 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
-    //从数据库中获取原始数据
+    /**
+     * to acquire earthquake data from database
+     * @param databaseName the name of the database
+     * @param tableName the name of the table
+     */
     private void readDataFromDatabase(String databaseName, String tableName) {
         try {
             if (table != null)
                 table.clear();
 
-            String drive = "org.sqlite.JDBC";
-            Class.forName(drive);// 加载驱动,连接sqlite的jdbc
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
-            Statement statement = connection.createStatement();
-            ResultSet rSet = statement.executeQuery("select * from " + tableName);//搜索数据库，将搜索的放入数据集ResultSet中
-            while (rSet.next()) {            //遍历这个结果集
-                String[] rowData = new String[8];
-                for (int i = 1; i <= 8; i++) {
-                    rowData[i - 1] = rSet.getString(i);
+                String drive = "org.sqlite.JDBC";
+                Class.forName(drive);//Loading the driver and connect to sqlite
+                Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
+                Statement statement = connection.createStatement();
+                ResultSet rSet = statement.executeQuery("select * from " + tableName);//Query database, put searched data in the resultset
+                while (rSet.next()) {            //Traverse the resultset
+                    String[] rowData = new String[8];
+                    for (int i = 1; i <= 8; i++) {
+                        rowData[i - 1] = rSet.getString(i);
+                    }
+                    regions.add(rowData[6]);
+                    table.add(rowData);
                 }
-
-                regions.add(rowData[6]);
-                table.add(rowData);
-            }
-            rSet.close();//关闭数据集
-            connection.close();//关闭数据库连接
+                rSet.close();//Close resultset
+                connection.close();//close database connection
             comboBox_region.getItems().addAll(regions);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    //从www.emsc-csem.org/Earthquake/网页抓取数据
+    /**
+     * To acquire earthquake data by scraping from web page www.emsc-csem.org/Earthquake/
+     * @param pages the website of the web page
+     */
     private void scrapingDataFromWebsite(int pages) {
         Document document;
         try {
-            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+            Class.forName("org.sqlite.JDBC");//Loading the driver and connect to sqlite
             Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
             Statement clearData = connection.createStatement();
             clearData.execute(" delete from quakes");
 
+            Set<String> lastIDs =new HashSet<>();
+            lastIDs.add("0");
             for (int i = 1; i <= pages; i++) {
                 String url = String.valueOf(new StringBuilder("https://www.emsc-csem.org/Earthquake/?view=").append(i));
                 document = Jsoup.connect(url).get();
@@ -382,8 +474,7 @@ public class Controller_SeniorQuery implements Initializable {
 
                 Pattern pattern = Pattern.compile("[0-9]*");
 
-                for (int i1 = 0; i1 < element1.size() - 1; i1++) {
-                    Element elem = element1.get(i1);
+                for (Element elem : element1) {
                     if (pattern.matcher(elem.id()).matches()) {
                         String[] rowData = new String[7];
                         rowData[0] = elem.id();
@@ -394,7 +485,15 @@ public class Controller_SeniorQuery implements Initializable {
                         rowData[5] = elem.getElementsByClass("tabev2").get(2).text();
                         rowData[6] = elem.getElementsByClass("tb_region").get(0).text();
 
-                        //将爬取的数据存入数据库
+                        //Store the scraped data in the database
+                        if (lastIDs.contains(elem.id()))
+                        {
+                            lastIDs.remove(elem.id());
+                            continue;
+                        }else {
+                            lastIDs.add(elem.id());
+                        }
+
                         try {
                             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO quakes(id,UTC_date,latitude,longitude,depth,magnitude,region) VALUES (?,?,?,?,?,?,?)");
                             preparedStatement.setInt(1, Integer.parseInt(rowData[0]));
@@ -408,16 +507,22 @@ public class Controller_SeniorQuery implements Initializable {
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
+
                     }
+
                 }
+
             }
-            connection.close();//关闭数据库连接
+            connection.close();//close database connection
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
-    //将data中数据显示到表格
+    /**
+     * To show the acquired data in a table
+     */
     private void showTable() {
         if (!data.isEmpty())
         {
@@ -454,10 +559,13 @@ public class Controller_SeniorQuery implements Initializable {
                 }
             }
         }
+        label_state.setText(table.size()+" earthquakes been queried");
         tableView_table.setItems(data);
     }
 
-    //将data中数据显示到map
+    /**
+     * To show the acquired data in a map
+     */
     private void showMap() {
         ImageView mapView = imageView_map;
         pane_image.getChildren().clear();
@@ -496,13 +604,15 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    //将data中数据显示到柱形图
+    /**
+     * To show data in a bar chart
+     */
     private void showBarChart() {
         if (!magnitudeData.isEmpty()) {
             magnitudeData.clear();
             barChart_bc.getData().clear();
         }
-         XYChart.Series<String, Integer> series = new XYChart.Series();
+        XYChart.Series<String, Integer> series = new XYChart.Series();
 
         String[] magnitudes = {"[1,3)", "[3,4.5)", "[4.5,6)", "[6,7)", "[7,∞)"};
 
@@ -516,13 +626,15 @@ public class Controller_SeniorQuery implements Initializable {
 
         barChart_bc.getData().add(series);
     }
-
-    //单选按钮组及浏览文本框配置
+    /**
+     * Configuration of radio buttons
+     */
     private void radioButtonConfig() {
         radioButton_fromCSV.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue)
                 textField_browse.clear();
         });
+
         radioButton_fromDB.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue)
                 textField_browse.clear();
@@ -540,6 +652,7 @@ public class Controller_SeniorQuery implements Initializable {
         textField_browse.textProperty().addListener((observable, oldValue, newValue) -> {
             isChangedFile = !newValue.equals(oldValue);
         });
+
         ToggleGroup toggleGroup = new ToggleGroup();
         radioButton_fromCSV.setToggleGroup(toggleGroup);
         radioButton_fromDB.setToggleGroup(toggleGroup);
@@ -614,12 +727,14 @@ public class Controller_SeniorQuery implements Initializable {
         radioButton_day.setToggleGroup(toggleGroup2);
     }
 
-    //多选下拉框配置
+    /**
+     * Configuration of combobox
+     */
     private void comboBoxConfig() {
 
 
         try {
-            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+            Class.forName("org.sqlite.JDBC");//Loading the driver and connect to sqlite
             Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(" SELECT code,name FROM plates ");
@@ -648,37 +763,46 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
-    //错误信息框弹出配置
+
+    /**
+     * Configuration of error information dialog
+     * @param info The error information
+     */
     private void errorInfoDialog(String info) {
         Alert warning = new Alert(Alert.AlertType.WARNING, info);
         Button warn = new Button();
         warn.setOnAction(e -> warning.showAndWait());
-        warning.setTitle("信息有误");
+        warning.setTitle("Error information");
         warning.show();
     }
 
-    //文本框填入内容错误情况
+    /**
+     * Different error conditions
+     * @return true when error happened
+     */
     private boolean isErrorCondition() {
         boolean flag = true;
         if (start_year > end_year || start_month > end_month || start_day > end_day)
-            errorInfoDialog("日期填写错误或起始值大于终止值");
+            errorInfoDialog("The date is wrong or the lower bound is greater than the upper bound");
         else if (!isFitValue(start_latitude, -90.0, 90.0) || !isFitValue(end_latitude, -90.0, 90.0) || start_latitude > end_latitude)
-            errorInfoDialog("填写的纬度不在正确范围内或起始值大于终止值 \n\nTips: -90 <= 纬度 <= 90");
+            errorInfoDialog("The latitude is wrong or the lower bound is greater than the upper bound \n\nTips: -90 <= latitude <= 90");
         else if (!isFitValue(start_longitude, -180.0, 180.0) || !isFitValue(end_longitude, -180.0, 180.0) || start_longitude > end_longitude)
-            errorInfoDialog("填写的经度不在正确范围内或起始值大于终止值 \n\nTips: -180 <= 经度 <= 180");
+            errorInfoDialog("The longitude is wrong or the lower bound is greater than the upper bound \n\nTips: -180 <= longitude <= 180");
         else if (!isFitValue(start_depth, -1000.0, 1000.0) || !isFitValue(start_depth, -1000.0, 1000.0) || start_depth > end_depth)
-            errorInfoDialog("填写的深度不在正确范围内或起始值大于终止值 \n\nTips: -1000 <= 纬度 <= 1000");
+            errorInfoDialog("The depth is wrong or the lower bound is greater than the upper bound \n\nTips: -1000 <= depth <= 1000");
         else if (!isFitValue(start_magnitude, 0.0, 10.0) || !isFitValue(end_magnitude, 0.0, 10.0) || start_magnitude > end_magnitude)
-            errorInfoDialog("填写的强度不在正确范围内或起始值大于终止值 \n\nTips: 0 <= 强度 <= 10");
+            errorInfoDialog("The intensity is wrong or the lower bound is greater than the upper bound \n\nTips: 0 <= intensity <= 10");
         else flag = false;
 
         return flag;
     }
 
-    //打开文件响应事件
+    /**
+     * The event of opening file on menu item
+     */
     public void onMenuItemOpenFile() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("请选择文件来源");
+        fileChooser.setTitle("Please select file source");
         List<String> tempFileType = new LinkedList<>();
         tempFileType.add("*.db");
         tempFileType.add("*.sqlite");
@@ -693,17 +817,22 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    //数据自网页响应事件
+    /**
+     * The event that selectiong data from website on menu item
+     */
     public void onMenuItemDataFromWebsite() {
         radioButton_fromWeb.setSelected(true);
     }
 
-    //退出程序响应事件
+    /**
+     * The event of exiting on menu item
+     */
     public void onMenuItemExit() {
         System.exit(0);
     }
-
-    //查询按钮响应事件
+    /**
+     * The event of the query button
+     */
     public void onButtonQuery() {
         getData();
         if (!isErrorCondition()) {
@@ -712,15 +841,15 @@ public class Controller_SeniorQuery implements Initializable {
                     if (textField_browse.getText().contains(".csv")) {
                         readDataFromCsv(textField_browse.getText());
                         readDataFromDatabase("earthquakes-2.db", "quakes");
-                    } else {
-                        errorInfoDialog("请选择csv类型文件");
+                    }else {
+                        errorInfoDialog("Please select the csv file");
                     }
 
                 } else if (radioButton_fromDB.isSelected()) {
                     if ((textField_browse.getText().contains(".db")) || (textField_browse.getText().contains(".sqlite")))
                         readDataFromDatabase(textField_browse.getText(), "quakes");
                     else
-                        errorInfoDialog("请选择数据库类型文件");
+                        errorInfoDialog("Please select the database file");
                 } else if (radioButton_fromWeb.isSelected()) {
                     scrapingDataFromWebsite(2);
                     readDataFromDatabase("earthquakes-2.db", "quakes");
@@ -733,7 +862,9 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    //清空按钮响应事件
+    /**
+     * To clear the events of buttons
+     */
     public void onButtonClear() {
         data.clear();
         tableView_table.setItems(data);
@@ -755,7 +886,9 @@ public class Controller_SeniorQuery implements Initializable {
 
     }
 
-    //浏览按钮响应事件
+    /**
+     * To browse the events of buttons
+     */
     public void onButtonBrowse() {
         if (radioButton_fromCSV.isSelected()) {
             filePostFix = new LinkedList<>();
@@ -768,7 +901,7 @@ public class Controller_SeniorQuery implements Initializable {
             filePostFix.add("*.sqlite");
         }
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("请选择文件来源");
+        fileChooser.setTitle("Please the file source");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter(fileType, filePostFix));
         File file = fileChooser.showOpenDialog(null);
         if (file != null) {
@@ -776,7 +909,11 @@ public class Controller_SeniorQuery implements Initializable {
         }
     }
 
-    //窗口初始化
+    /**
+     * To initialize the GUI
+     * @param location
+     * @param resources
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         radioButtonConfig();
