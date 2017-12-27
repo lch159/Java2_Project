@@ -85,6 +85,24 @@ public class Controller_SeniorQuery implements Initializable {
     ComboBox comboBox_area1;
     @FXML
     ComboBox comboBox_area2;
+    @FXML
+    RadioButton radioButton_region;
+    @FXML
+    RadioButton radioButton_plate;
+    @FXML
+    ComboBox comboBox_region;
+    @FXML
+    Label label_region;
+    @FXML
+    Label label_plate1;
+    @FXML
+    Label label_plate2;
+    @FXML
+    RadioButton radioButton_null;
+    @FXML
+    RadioButton radioButton_fiftyMinutes;
+    @FXML
+    RadioButton radioButton_day;
 
 
     private static Double start_year;
@@ -170,6 +188,10 @@ public class Controller_SeniorQuery implements Initializable {
         return String.valueOf(comboBox_area2.getValue());
     }
 
+    private String getRegion(){
+        return String.valueOf(comboBox_region.getValue());
+    }
+
     private void setStartDate(String date) {
         String[] startDate = date.split("-");
         start_year = Double.parseDouble(startDate[0]);
@@ -190,14 +212,20 @@ public class Controller_SeniorQuery implements Initializable {
         return value >= start && value <= end;
     }
 
-    private boolean isSelectedArea(String area_id) {
+    private boolean isSelectedArea(String region,String area_id) {
         boolean flag = false;
-        String plate1 = plates.get(area_id)[0];
-        String plate2 = plates.get(area_id)[1];
-        String selectPlate1 = areas.get(getPlate1());
-        String selectPlate2 = areas.get(getPlate2());
-        if ((selectPlate1.equals("All") && selectPlate1.equals("All")) || (selectPlate2.equals("All") && plate1.equals(selectPlate1)) || (selectPlate1.equals("All") && plate2.equals(selectPlate2)) || (plate1.equals(selectPlate1) && plate2.equals(selectPlate2)))
-            flag = true;
+        if (radioButton_region.isSelected()){
+            if (getRegion().equals("All")||getRegion().equals(region))
+                flag=true;
+        }else if (radioButton_plate.isSelected()){
+            String plate1 = plates.get(area_id)[0];
+            String plate2 = plates.get(area_id)[1];
+            String selectPlate1 = areas.get(getPlate1());
+            String selectPlate2 = areas.get(getPlate2());
+            if ((selectPlate1.equals("All") && selectPlate1.equals("All")) || (selectPlate2.equals("All") && plate1.equals(selectPlate1)) || (selectPlate1.equals("All") && plate2.equals(selectPlate2)) || (plate1.equals(selectPlate1) && plate2.equals(selectPlate2)))
+                flag = true;
+        }
+
         return flag;
     }
 
@@ -205,7 +233,7 @@ public class Controller_SeniorQuery implements Initializable {
     private boolean isFitValues(String[] elem) {
         String[] tempDate = elem[1].split("[ -]");
         return isFitValue(Double.parseDouble(tempDate[0]), start_year, end_year) && isFitValue(Double.parseDouble(tempDate[1]), start_month, end_month) && isFitValue(Double.parseDouble(tempDate[2]), start_day, end_day) && isFitValue(Double.parseDouble(elem[2]), start_latitude, end_latitude)
-                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude) && isSelectedArea(elem[7]);
+                && isFitValue(Double.parseDouble(elem[3]), start_longitude, end_longitude) && isFitValue(Double.parseDouble(elem[4]), start_depth, end_depth) && isFitValue(Double.parseDouble(elem[5]), start_magnitude, end_magnitude) && isSelectedArea(elem[6],elem[7]);
     }
 
     //获取文本框内填入的内容
@@ -230,31 +258,30 @@ public class Controller_SeniorQuery implements Initializable {
                 table.clear();
 
 
-                Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
-                Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
-                Statement clearData = connection.createStatement();
-                clearData.execute(" delete from quakes");
-                CsvReader earthquakeFile = new CsvReader(path);
-                earthquakeFile.readHeaders();
-                while (earthquakeFile.readRecord()) {
+            Class.forName("org.sqlite.JDBC");// 加载驱动,连接sqlite的jdbc
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:earthquakes-2.db");
+            Statement clearData = connection.createStatement();
+            clearData.execute(" delete from quakes");
+            CsvReader earthquakeFile = new CsvReader(path);
+            earthquakeFile.readHeaders();
+            while (earthquakeFile.readRecord()) {
 
-                    String[] values = earthquakeFile.getValues();
-                    try {
-                        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO quakes(id,UTC_date,latitude,longitude,depth,magnitude,region) VALUES (?,?,?,?,?,?,?)");
-                        preparedStatement.setInt(1, Integer.parseInt(values[0]));
-                        preparedStatement.setString(2, values[1]);
-                        preparedStatement.setDouble(3, Double.parseDouble(values[2]));
-                        preparedStatement.setDouble(4, Double.parseDouble(values[3]));
-                        preparedStatement.setInt(5, Integer.parseInt(values[4]));
-                        preparedStatement.setDouble(6, Double.parseDouble(values[5]));
-                        preparedStatement.setString(7, values[6]);
-                        preparedStatement.execute();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
+                String[] values = earthquakeFile.getValues();
+                try {
+                    PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO quakes(id,UTC_date,latitude,longitude,depth,magnitude,region) VALUES (?,?,?,?,?,?,?)");
+                    preparedStatement.setInt(1, Integer.parseInt(values[0]));
+                    preparedStatement.setString(2, values[1]);
+                    preparedStatement.setDouble(3, Double.parseDouble(values[2]));
+                    preparedStatement.setDouble(4, Double.parseDouble(values[3]));
+                    preparedStatement.setInt(5, Integer.parseInt(values[4]));
+                    preparedStatement.setDouble(6, Double.parseDouble(values[5]));
+                    preparedStatement.setString(7, values[6]);
+                    preparedStatement.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
-                connection.close();
-
+            }
+            connection.close();
 
 
         } catch (Exception e) {
@@ -269,23 +296,24 @@ public class Controller_SeniorQuery implements Initializable {
             if (table != null)
                 table.clear();
 
-                String drive = "org.sqlite.JDBC";
-                Class.forName(drive);// 加载驱动,连接sqlite的jdbc
-                Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
-                Statement statement = connection.createStatement();
-                ResultSet rSet = statement.executeQuery("select * from " + tableName);//搜索数据库，将搜索的放入数据集ResultSet中
-                while (rSet.next()) {            //遍历这个结果集
-                    String[] rowData = new String[8];
-                    for (int i = 1; i <= 8; i++) {
-                        rowData[i - 1] = rSet.getString(i);
-                    }
 
-                    table.add(rowData);
+            String drive = "org.sqlite.JDBC";
+            Class.forName(drive);// 加载驱动,连接sqlite的jdbc
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:" + databaseName);
+            Statement statement = connection.createStatement();
+            ResultSet rSet = statement.executeQuery("select * from " + tableName);//搜索数据库，将搜索的放入数据集ResultSet中
+            while (rSet.next()) {            //遍历这个结果集
+                String[] rowData = new String[8];
+                for (int i = 1; i <= 8; i++) {
+                    rowData[i - 1] = rSet.getString(i);
                 }
-                rSet.close();//关闭数据集
-                connection.close();//关闭数据库连接
 
-
+                regions.add(rowData[6]);
+                table.add(rowData);
+            }
+            rSet.close();//关闭数据集
+            connection.close();//关闭数据库连接
+            comboBox_region.getItems().addAll(regions);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -344,6 +372,7 @@ public class Controller_SeniorQuery implements Initializable {
     }
 
     //将data中数据显示到表格
+    private static Set<String> regions=new HashSet<>();
     private void showTable() {
         if (!data.isEmpty())
             data.clear();
@@ -438,6 +467,42 @@ public class Controller_SeniorQuery implements Initializable {
         radioButton_fromDB.setToggleGroup(toggleGroup);
         radioButton_fromWeb.setToggleGroup(toggleGroup);
         radioButton_fromCSV.setSelected(true);
+
+
+        radioButton_region.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue)
+            {
+                label_region.setVisible(true);
+                comboBox_region.setVisible(true);
+                label_plate1.setVisible(false);
+                label_plate2.setVisible(false);
+                comboBox_area1.setVisible(false);
+                comboBox_area2.setVisible(false);
+            }
+        });
+        radioButton_plate.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue){
+                label_region.setVisible(false);
+                comboBox_region.setVisible(false);
+                label_plate1.setVisible(true);
+                label_plate2.setVisible(true);
+                comboBox_area1.setVisible(true);
+                comboBox_area2.setVisible(true);
+            }else
+            {
+                label_region.setVisible(false);
+                comboBox_region.setVisible(false);
+                label_plate1.setVisible(false);
+                label_plate2.setVisible(false);
+                comboBox_area1.setVisible(false);
+                comboBox_area2.setVisible(false);
+            }
+        });
+
+        ToggleGroup toggleGroup1=new ToggleGroup();
+        radioButton_region.setToggleGroup(toggleGroup1);
+        radioButton_plate.setToggleGroup(toggleGroup1);
+        radioButton_region.setSelected(true);
     }
 
     //多选下拉框配置
@@ -464,6 +529,9 @@ public class Controller_SeniorQuery implements Initializable {
             e.printStackTrace();
         }
 
+        regions.add("All");
+
+        comboBox_region.setValue("All");
         comboBox_area1.setValue("All");
         comboBox_area1.getItems().addAll(areas.keySet());
         comboBox_area2.setValue("All");
@@ -525,16 +593,15 @@ public class Controller_SeniorQuery implements Initializable {
         if (!isErrorCondition()) {
             if (isChangedFile) {
                 if (radioButton_fromCSV.isSelected()) {
-                    if (textField_browse.getText().contains(".csv"))
-                    {
+                    if (textField_browse.getText().contains(".csv")) {
                         readDataFromCsv(textField_browse.getText());
                         readDataFromDatabase("earthquakes-2.db", "quakes");
-                    }else {
+                    } else {
                         errorInfoDialog("请选择csv类型文件");
                     }
 
                 } else if (radioButton_fromDB.isSelected()) {
-                    if ((textField_browse.getText().contains(".db") )|| (textField_browse.getText().contains(".sqlite")))
+                    if ((textField_browse.getText().contains(".db")) || (textField_browse.getText().contains(".sqlite")))
                         readDataFromDatabase(textField_browse.getText(), "quakes");
                     else
                         errorInfoDialog("请选择数据库类型文件");

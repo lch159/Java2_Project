@@ -26,13 +26,13 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<GridPane alignment="center" hgap="10" prefHeight="800.0" prefWidth="1200.0" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller_SeniorQuery">
+<GridPane alignment="center" hgap="10" prefHeight="1100.0" prefWidth="1200.0" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller_SeniorQuery">
     <children>
-        <VBox prefHeight="800.0" prefWidth="1200.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+        <VBox prefHeight="1100.0" prefWidth="1200.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
             <children>
-                <SplitPane orientation="VERTICAL" prefHeight="300.0" prefWidth="1200.0">
+                <SplitPane orientation="VERTICAL" prefHeight="400.0" prefWidth="1200.0">
                     <items>
-                        <VBox prefHeight="300.0" prefWidth="1000.0">
+                        <VBox prefHeight="400.0" prefWidth="1000.0">
                             <children>
                                 <Pane prefHeight="25.0" prefWidth="1200.0" VBox.vgrow="ALWAYS" />
                                 <HBox prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
@@ -62,29 +62,24 @@
                                     <children>
                                         <Pane prefHeight="50.0" prefWidth="300.0">
                                             <children>
-                                                <Label layoutX="14.0" layoutY="13.0" text="时间：" />
-                                                <DatePicker fx:id="datePicker_start" layoutX="68.0" layoutY="7.0" promptText="Eg : XXXX-XX-XX" />
+                                                <Label layoutX="14.0" layoutY="19.0" text="时间：" />
+                                                <DatePicker fx:id="datePicker_start" layoutX="67.0" layoutY="14.0" promptText="Eg : XXXX-XX-XX" />
                                             </children>
                                         </Pane>
                                         <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label layoutX="5.0" layoutY="13.0" text="至" />
-                                                <DatePicker fx:id="datePicker_end" layoutX="48.0" layoutY="7.0" promptText="Eg : XXXX-XX-XX" />
+                                                <Label layoutX="34.0" layoutY="19.0" text="至" />
+                                                <DatePicker fx:id="datePicker_end" layoutX="74.0" layoutY="14.0" promptText="Eg : XXXX-XX-XX" />
                                             </children>
                                             <HBox.margin>
                                                 <Insets />
                                             </HBox.margin>
                                         </Pane>
-                              <Pane prefHeight="50.0" prefWidth="300.0">
+                              <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ComboBox fx:id="comboBox_area1" layoutX="87.0" layoutY="10.0" prefWidth="150.0" />
-                                    <Label layoutX="14.0" layoutY="15.0" text="板块1" />
-                                 </children>
-                              </Pane>
-                              <Pane prefHeight="50.0" prefWidth="300.0">
-                                 <children>
-                                    <Label layoutX="14.0" layoutY="15.0" text="板块2" />
-                                    <ComboBox fx:id="comboBox_area2" layoutX="96.0" layoutY="10.0" prefWidth="150.0" />
+                                    <RadioButton fx:id="radioButton_null" layoutY="19.0" mnemonicParsing="false" text="无" />
+                                    <RadioButton fx:id="radioButton_fiftyMinutes" layoutX="120.0" layoutY="19.0" mnemonicParsing="false" text="最近50分钟" />
+                                    <RadioButton fx:id="radioButton_day" layoutX="259.0" layoutY="19.0" mnemonicParsing="false" text="最近24小时" />
                                  </children>
                               </Pane>
                                     </children>
@@ -148,6 +143,34 @@
                                         </Pane>
                                     </children>
                                 </HBox>
+                        <HBox prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <RadioButton fx:id="radioButton_region" layoutX="14.0" layoutY="15.0" mnemonicParsing="false" text="区域" />
+                                    <RadioButton fx:id="radioButton_plate" layoutX="150.0" layoutY="15.0" mnemonicParsing="false" text="板块" />
+                                 </children>
+                              </Pane>
+                              <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <ComboBox fx:id="comboBox_region" layoutX="75.0" layoutY="10.0" prefWidth="150.0" />
+                                    <Label fx:id="label_region" layoutX="22.0" layoutY="15.0" text="区域" />
+                                 </children>
+                              </Pane>
+                              <Pane prefHeight="50.0" prefWidth="300.0">
+                                 <children>
+                                    <ComboBox fx:id="comboBox_area1" layoutX="102.0" layoutY="10.0" prefWidth="150.0" />
+                                    <Label fx:id="label_plate1" layoutX="35.0" layoutY="15.0" text="板块1" />
+                                 </children>
+                              </Pane>
+                              <Pane prefHeight="50.0" prefWidth="300.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label fx:id="label_plate2" layoutX="14.0" layoutY="15.0" text="板块2" />
+                                    <ComboBox fx:id="comboBox_area2" layoutX="75.0" layoutY="10.0" prefWidth="150.0" />
+                                 </children>
+                              </Pane>
+                           </children>
+                        </HBox>
                                 <Pane prefHeight="50.0" prefWidth="1200.0" VBox.vgrow="ALWAYS">
                                     <children>
                                         <Button fx:id="button_query" layoutX="470.0" layoutY="8.0" mnemonicParsing="false" onAction="#onButtonQuery" text="查    询" />
@@ -158,17 +181,17 @@
                         </VBox>
                     </items>
                 </SplitPane>
-                <SplitPane prefHeight="500.0" prefWidth="1200.0">
+                <SplitPane prefHeight="700.0" prefWidth="1200.0">
                     <items>
                         <VBox prefHeight="500.0" prefWidth="1200.0">
                             <children>
-                                <TabPane prefHeight="500.0" prefWidth="1200.0" tabClosingPolicy="UNAVAILABLE">
+                                <TabPane prefHeight="800.0" prefWidth="1200.0" tabClosingPolicy="UNAVAILABLE">
                                     <tabs>
                                         <Tab fx:id="tabPane_table" text="显示到表格">
                                             <content>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="453.0" prefWidth="1195.0">
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="753.0" prefWidth="1195.0">
                                                     <children>
-                                                        <TableView fx:id="tableView_table" prefHeight="458.0" prefWidth="1195.0">
+                                                        <TableView fx:id="tableView_table" prefHeight="753.0" prefWidth="1195.0">
                                                             <columns>
                                                                 <TableColumn fx:id="tableColumn_ID" prefWidth="75.0" text="ID" />
                                                                 <TableColumn fx:id="tableColumn_magnitude" prefWidth="87.0" text="震级" />
@@ -186,11 +209,11 @@
                                         </Tab>
                                         <Tab fx:id="tabPane_map" text="显示到地图">
                                             <content>
-                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="453.0" prefWidth="1200.0">
+                                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="853.0" prefWidth="1200.0">
                                                     <children>
-                                                        <Pane fx:id="pane_image" prefHeight="453.0" prefWidth="1200.0">
+                                                        <Pane fx:id="pane_image" prefHeight="753.0" prefWidth="1200.0">
                                                             <children>
-                                                                <ImageView fx:id="imageView_map" fitHeight="453.0" fitWidth="1200.0" pickOnBounds="true">
+                                                                <ImageView fx:id="imageView_map" fitHeight="753.0" fitWidth="1200.0" pickOnBounds="true">
                                                                     <image>
                                                                         <Image url="@Mercator.jpg" />
                                                                     </image>
